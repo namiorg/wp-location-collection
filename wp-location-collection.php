@@ -16,25 +16,28 @@
 
 register_activation_hook(
 	__FILE__,
-	['Nami_Location_Collection', 'activate']
+	array( 'Nami_Location_Collection', 'activate' )
 );
 
 register_deactivation_hook(
 	__FILE__,
-	[ 'Nami_Location_Collection', 'deactivate' ]
+	array( 'Nami_Location_Collection', 'deactivate' )
 );
 
 register_uninstall_hook(
 	__FILE__,
-	['Nami_Location_Collection', 'uninstall']
+	array( 'Nami_Location_Collection', 'uninstall' )
 );
+
 class Nami_Location_Collection {
 
 	public static function activate() {
 		// check for GravityForms and if not present, deactivate?
 	}
 
-	public static function deactivate() {}
+	public static function deactivate() {
+	}
 
-	public static function uninstall() {}
+	public static function uninstall() {
+	}
 }

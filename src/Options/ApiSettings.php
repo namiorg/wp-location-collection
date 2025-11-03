@@ -46,12 +46,23 @@ class ApiSettings {
 		);
 
 		add_settings_section(
-			'api_settings_section',
+			self::OPTIONS_GROUP . '-main',
 			'API Settings',
+			null,
+			self::OPTIONS_GROUP . '-main'
+		);
+
+		add_settings_field(
+			'api_key',
+			'API Key',
 			function () {
-				echo '<p>Configure the API settings for location data collection.</p>';
+				$options = get_option( self::OPTIONS_GROUP, $this->default_options );
+				?>
+				<input type="text" name="<?php echo esc_attr( self::OPTIONS_GROUP ); ?>[api_key]" value="<?php echo esc_attr( $options['api_key'] ); ?>" class="regular-text" />
+				<?php
 			},
-			self::OPTIONS_GROUP
+			self::OPTIONS_GROUP,
+			self::OPTIONS_GROUP . '-main'
 		);
 	}
 

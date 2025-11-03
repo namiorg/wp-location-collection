@@ -12,7 +12,11 @@
  * @package         Nami_Location_Collection
  */
 
-// Your code starts here.
+require_once 'vendor/autoload.php';
+
+if ( class_exists( 'Nami\LocationData\Bootstrap' ) && ! wp_doing_ajax() ) {
+	\Nami\LocationData\Bootstrap::init();
+}
 
 register_activation_hook(
 	__FILE__,
@@ -59,3 +63,4 @@ class Nami_Location_Collection {
 	public static function uninstall() {
 	}
 }
+

@@ -6,6 +6,11 @@
   "scripts": {
     "makepot": "wp i18n make-pot ."
   },
+  "autoload": {
+    "psr-4": {
+      "Nami\\LocationData\\": "src/"
+    }
+  },
   "config": {
     "allow-plugins": {
       "dealerdirect/phpcodesniffer-composer-installer": true

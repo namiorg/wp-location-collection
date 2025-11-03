@@ -7,6 +7,8 @@
 
 namespace Nami\LocationData\Admin;
 
+use Nami\LocationData\Options\ApiSettings;
+
 /**
  * Settings Class
  */
@@ -79,6 +81,17 @@ class SettingsPage {
 	 * @return void
 	 */
 	public function output_admin_page(): void {
-		echo "<div class='wrap'>Admin Settings Page</div>";
+		?>
+		<div class="wrap">
+			<h1>Location Data Collection Settings</h1>
+			<form method="post" action="<?php echo esc_url( admin_url( 'options.php' ) ); ?>">
+				<?php
+				settings_fields( ApiSettings::OPTIONS_GROUP );
+				do_settings_sections( ApiSettings::OPTIONS_GROUP );
+				submit_button();
+				?>
+			</form>
+		</div>
+		<?php
 	}
 }

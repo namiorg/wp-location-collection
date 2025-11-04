@@ -109,6 +109,8 @@
 		<exclude name="WordPress.Files.FileName.InvalidClassFileName"/>
 		<exclude name="Squiz.Commenting.InlineComment.InvalidEndChar"/>
 		<exclude name="WordPress.Files.FileName.NotHyphenatedLowercase"/>
+		<exclude name="Generic.Commenting.DocComment.ShortNotCapital"/>
+		<exclude name="Squiz.Commenting.FileComment.Missing"/>
 	</rule>
 
 	<rule ref="WordPress.WP.I18n">

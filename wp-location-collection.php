@@ -63,4 +63,3 @@ class Nami_Location_Collection {
 	public static function uninstall() {
 	}
 }
-

@@ -1,7 +1,8 @@
 {
   "require-dev": {
     "wp-cli/i18n-command": "^2",
-    "wp-coding-standards/wpcs": "^3.2"
+    "wp-coding-standards/wpcs": "^3.2",
+    "symfony/var-dumper": "^7.3"
   },
   "scripts": {
     "makepot": "wp i18n make-pot ."

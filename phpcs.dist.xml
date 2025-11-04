@@ -111,6 +111,7 @@
 		<exclude name="WordPress.Files.FileName.NotHyphenatedLowercase"/>
 		<exclude name="Generic.Commenting.DocComment.ShortNotCapital"/>
 		<exclude name="Squiz.Commenting.FileComment.Missing"/>
+		<exclude name="Generic.Commenting.Todo.TaskFound"/>
 	</rule>
 
 	<rule ref="WordPress.WP.I18n">

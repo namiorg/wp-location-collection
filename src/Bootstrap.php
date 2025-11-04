@@ -8,6 +8,7 @@
 namespace Nami\LocationData;
 
 use Nami\LocationData\Admin\SettingsPage;
+use Nami\LocationData\Options\ApiSettings;
 
 /**
  * Bootstrap Class
@@ -29,6 +30,7 @@ class Bootstrap {
 	 * @return void
 	 */
 	public static function plugin_loaded(): void {
+		ApiSettings::get_instance()->init();
 		SettingsPage::get_instance()->init();
 	}
 }

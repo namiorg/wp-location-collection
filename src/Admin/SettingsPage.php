@@ -86,8 +86,8 @@ class SettingsPage {
 			<h1>Location Data Collection Settings</h1>
 			<form method="post" action="<?php echo esc_url( admin_url( 'options.php' ) ); ?>">
 				<?php
-				settings_fields( ApiSettings::OPTIONS_GROUP . '-main' );
-				do_settings_sections( ApiSettings::OPTIONS_GROUP . '-main' );
+				settings_fields( ApiSettings::OPTIONS_GROUP );
+				do_settings_sections( ApiSettings::OPTIONS_GROUP );
 				submit_button();
 				?>
 			</form>

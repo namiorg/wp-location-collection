@@ -7,6 +7,8 @@
 
 namespace Nami\LocationData\Options;
 
+use Nami\LocationData\Admin\SettingsPage;
+
 /**
  * API Settings Class
  */
@@ -26,8 +28,30 @@ class ApiSettings {
 	 */
 	protected array $default_options = [
 		'api_key'      => '',
+		'api_secret'   => '',
 		'api_endpoint' => 'https://api.example.com',
 	];
+
+	/**
+	 * Singleton instance
+	 *
+	 * @var ApiSettings|null
+	 */
+	protected static ?self $instance = null;
+
+
+	/**
+	 * Get singleton instance
+	 *
+	 * @return self
+	 */
+	public static function get_instance(): self {
+		if ( null === self::$instance ) {
+			self::$instance = new self();
+		}
+
+		return self::$instance;
+	}
 
 	/**
 	 * Register settings
@@ -46,10 +70,12 @@ class ApiSettings {
 		);
 
 		add_settings_section(
-			self::OPTIONS_GROUP . '-main',
+			self::OPTIONS_GROUP,
 			'API Settings',
-			null,
-			self::OPTIONS_GROUP . '-main'
+			function () {
+				echo '<p>Add API key and endpoint.</p>';
+			},
+			self::OPTIONS_GROUP
 		);
 
 		add_settings_field(
@@ -62,7 +88,33 @@ class ApiSettings {
 				<?php
 			},
 			self::OPTIONS_GROUP,
-			self::OPTIONS_GROUP . '-main'
+			self::OPTIONS_GROUP
+		);
+
+		add_settings_field(
+			'api_secret',
+			'API Secret',
+			function () {
+				$options = get_option( self::OPTIONS_GROUP, $this->default_options );
+				?>
+				<input type="password" name="<?php echo esc_attr( self::OPTIONS_GROUP ); ?>[api_secret]" value="<?php echo esc_attr( $options['api_secret'] ); ?>" class="regular-text" />
+				<?php
+			},
+			self::OPTIONS_GROUP,
+			self::OPTIONS_GROUP
+		);
+
+		add_settings_field(
+			'api_endpoint',
+			'API Endpoint',
+			function () {
+				$options = get_option( self::OPTIONS_GROUP, $this->default_options );
+				?>
+				<input type="text" name="<?php echo esc_attr( self::OPTIONS_GROUP ); ?>[api_endpoint]" value="<?php echo esc_attr( $options['api_endpoint'] ); ?>" class="regular-text" />
+				<?php
+			},
+			self::OPTIONS_GROUP,
+			self::OPTIONS_GROUP
 		);
 	}
 

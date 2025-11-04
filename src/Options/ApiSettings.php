@@ -27,9 +27,10 @@ class ApiSettings {
 	 * @var array
 	 */
 	protected array $default_options = [
-		'api_key'      => '',
-		'api_secret'   => '',
-		'api_endpoint' => 'https://api.example.com',
+		'api_key'          => '',
+		'api_secret'       => '',
+		'api_endpoint'     => 'https://api.example.com',
+		'gravity_forms_id' => '',
 	];
 
 	/**
@@ -116,6 +117,19 @@ class ApiSettings {
 			self::OPTIONS_GROUP,
 			self::OPTIONS_GROUP
 		);
+
+		add_settings_field(
+			'gravity_forms_id',
+			'Gravity Forms Form ID',
+			function () {
+				$options = get_option( self::OPTIONS_GROUP, $this->default_options );
+				?>
+				<input type="text" name="<?php echo esc_attr( self::OPTIONS_GROUP ); ?>[gravity_forms_id]" value="<?php echo esc_attr( $options['gravity_forms_id'] ); ?>" class="regular-text" />
+				<?php
+			},
+			self::OPTIONS_GROUP,
+			self::OPTIONS_GROUP
+		);
 	}
 
 	/**
@@ -125,9 +139,11 @@ class ApiSettings {
 	 * @return array Sanitized options.
 	 */
 	public function sanitize_options( array $input ): array {
-		$sanitized                 = [];
-		$sanitized['api_key']      = sanitize_text_field( $input['api_key'] ?? '' );
-		$sanitized['api_endpoint'] = esc_url_raw( $input['api_endpoint'] ?? '' );
+		$sanitized                     = [];
+		$sanitized['api_key']          = sanitize_text_field( $input['api_key'] ?? '' );
+		$sanitized['api_endpoint']     = esc_url_raw( $input['api_endpoint'] ?? '' );
+		$sanitized['api_secret']       = sanitize_text_field( $input['api_secret'] ?? '' );
+		$sanitized['gravity_forms_id'] = absint( $input['gravity_forms_id'] ?? 0 );
 		return array_merge( $this->default_options, $sanitized );
 	}
 

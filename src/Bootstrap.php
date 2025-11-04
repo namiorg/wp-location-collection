@@ -8,6 +8,7 @@
 namespace Nami\LocationData;
 
 use Nami\LocationData\Admin\SettingsPage;
+use Nami\LocationData\Form\GravityForms;
 use Nami\LocationData\Options\ApiSettings;
 
 /**
@@ -32,5 +33,6 @@ class Bootstrap {
 	public static function plugin_loaded(): void {
 		ApiSettings::get_instance()->init();
 		SettingsPage::get_instance()->init();
+		GravityForms::get_instance()->init();
 	}
 }

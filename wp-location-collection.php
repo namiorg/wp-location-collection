@@ -16,6 +16,7 @@ require_once 'vendor/autoload.php';
 
 if ( class_exists( 'Nami\LocationData\Bootstrap' ) && ! wp_doing_ajax() ) {
 	\Nami\LocationData\Bootstrap::init();
+	add_action( 'wp_enqueue_scripts', [ 'Nami_Location_Collection', 'register_assets' ] );
 }
 
 register_activation_hook(
@@ -61,5 +62,31 @@ class Nami_Location_Collection {
 	 * @return void
 	 */
 	public static function uninstall() {
+	}
+
+
+	/**
+	 * Register plugin assets
+	 *
+	 * Register both the Radar JS and CSS files for enqueuing later on.
+	 *
+	 * @return void
+	 */
+	public static function register_assets(): void {
+		// phpcs:disable WordPress.WP.EnqueuedResourceParameters.NotInFooter
+		// WordPress needs to modernize their phpcs rules...
+		wp_register_script(
+			handle: 'nami-location-collection-radar',
+			src: plugins_url( 'assets/radar.js', __FILE__ ),
+			ver:'0.1.0',
+			args: [ 'in_footer' => true ],
+		);
+		// phpcs:enable WordPress.WP.EnqueuedResourceParameters.NotInFooter
+
+		wp_register_style(
+			handle: 'nami-location-collection-radar',
+			src: plugins_url( 'assets/radar.css', __FILE__ ),
+			ver: '0.1.0'
+		);
 	}
 }

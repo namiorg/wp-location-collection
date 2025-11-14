@@ -7,6 +7,7 @@
 
 namespace Nami\LocationData\Options;
 
+use GFAPI;
 use Nami\LocationData\Admin\SettingsPage;
 
 /**
@@ -95,8 +96,17 @@ class ApiSettings {
 			'Gravity Forms Form ID',
 			function () {
 				$options = get_option( self::OPTIONS_GROUP, $this->default_options );
+				$forms   = GFAPI::get_forms();
 				?>
-				<input type="text" name="<?php echo esc_attr( self::OPTIONS_GROUP ); ?>[gravity_forms_id]" value="<?php echo esc_attr( $options['gravity_forms_id'] ); ?>" class="regular-text" />
+				<select name="<?php echo esc_attr( self::OPTIONS_GROUP ); ?>[gravity_forms_id]" id="">
+					<option value=""><?php esc_html_e( 'Select a form', 'wp-location-collection' ); ?></option>
+					<?php foreach ( $forms as $form ) : ?>
+						<option value="<?php echo esc_attr( $form['id'] ); ?>" <?php selected( $options['gravity_forms_id'], $form['id'] ); ?>>
+							<?php echo esc_html( $form['title'] ); ?>
+						</option>
+					<?php endforeach; ?>
+				</select>
+
 				<?php
 			},
 			self::OPTIONS_GROUP,

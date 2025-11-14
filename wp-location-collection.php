@@ -69,6 +69,8 @@ class Nami_Location_Collection {
 	 * Register plugin assets
 	 *
 	 * Register both the Radar JS and CSS files for enqueuing later on.
+	 * Handle asset registration here so we don't have to do weird path
+	 * checks in other parts of the code.
 	 *
 	 * @return void
 	 */

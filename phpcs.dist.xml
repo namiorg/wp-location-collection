@@ -112,6 +112,7 @@
 		<exclude name="Generic.Commenting.DocComment.ShortNotCapital"/>
 		<exclude name="Squiz.Commenting.FileComment.Missing"/>
 		<exclude name="Generic.Commenting.Todo.TaskFound"/>
+		<exclude name="Squiz.Commenting.FunctionComment.ParamCommentFullStop"/>
 	</rule>
 
 	<rule ref="WordPress.WP.I18n">

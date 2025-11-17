@@ -113,6 +113,7 @@
 		<exclude name="Squiz.Commenting.FileComment.Missing"/>
 		<exclude name="Generic.Commenting.Todo.TaskFound"/>
 		<exclude name="Squiz.Commenting.FunctionComment.ParamCommentFullStop"/>
+		<exclude name="WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase"/>
 	</rule>
 
 	<rule ref="WordPress.WP.I18n">

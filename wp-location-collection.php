@@ -5,7 +5,7 @@
  * Description:     Location data collection plugin for Gravity Forms
  * Author:          NAMI.org
  * Author URI:
- * Text Domain:     wp-location-collection
+ * Text Domain:     nami-location-collection
  * Domain Path:     /languages
  * Version:         0.1.0
  *
@@ -78,15 +78,24 @@ class Nami_Location_Collection {
 		// phpcs:disable WordPress.WP.EnqueuedResourceParameters.NotInFooter
 		// WordPress needs to modernize their phpcs rules...
 		wp_register_script(
-			handle: 'nami-location-collection-radar',
+			handle: 'radar',
 			src: plugins_url( 'assets/radar.js', __FILE__ ),
 			ver:'0.1.0',
 			args: [ 'in_footer' => true ],
 		);
+
+		wp_register_script(
+			handle: 'nami-location-collection',
+			src: plugins_url( 'assets/location.js', __FILE__ ),
+			deps: [ 'radar' ],
+			ver: '0.1.0',
+			args: [ 'in_footer' => true ],
+		);
+
 		// phpcs:enable WordPress.WP.EnqueuedResourceParameters.NotInFooter
 
 		wp_register_style(
-			handle: 'nami-location-collection-radar',
+			handle: 'radar',
 			src: plugins_url( 'assets/radar.css', __FILE__ ),
 			ver: '0.1.0'
 		);

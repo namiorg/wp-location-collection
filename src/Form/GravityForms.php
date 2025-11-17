@@ -3,6 +3,7 @@
 namespace Nami\LocationData\Form;
 
 use JetBrains\PhpStorm\NoReturn;
+use Nami\LocationData\Options\ApiSettings;
 
 /**
  * Gravity Forms Integration Class
@@ -37,17 +38,24 @@ class GravityForms {
 	 * @return void
 	 */
 	public function init(): void {
-		// @todo: use gform_enqueue_scripts_{form_id} to only load on our selected form
-		// this will need to be done by calling get_option(...) to get the form ID from settings
 		add_action( 'gform_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
 	}
 
 	/**
 	 * Enqueue Gravity Forms scripts
 	 *
+	 * @param array $form The Gravity Forms form array
+	 *
 	 * @return void
 	 */
-	public function enqueue_scripts(): void {
+	public function enqueue_scripts( $form ): void {
+		$options          = get_option( ApiSettings::OPTIONS_GROUP );
+		$selected_form_id = (int) $options['gravity_forms_id'] ?? null;
+		$current_form_id  = (int) $form['id'] ?? null;
+
+		if ( $selected_form_id !== $current_form_id ) {
+			return;
+		}
 		// Enqueue custom scripts here
 		wp_enqueue_script( 'nami-location-collection-radar' );
 		wp_enqueue_style( 'nami-location-collection-radar' );

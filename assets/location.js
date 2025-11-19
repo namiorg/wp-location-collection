@@ -21,7 +21,8 @@
 					responsive: true,
 					width: '600px',
 					onSelection: (result) => {
-						console.log( locationOptions.radarFields['zip-code'] );
+						let postalCodeField   = document.getElementById( locationOptions.radarFields['postal_code'] );
+						postalCodeField.value = result.postalCode;
 						// street.value = result.addressLabel;
 						// city.value  = result.city;
 						// state.value = result.state;

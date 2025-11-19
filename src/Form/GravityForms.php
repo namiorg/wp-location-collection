@@ -97,33 +97,31 @@ class GravityForms {
 	 */
 	public function find_radar_field( array $fields, int $id ): array {
 		$radar_fields = [];
-		$field_map    = [
-			'zip'      => 'postal',
-			'postal'   => 'postal',
-			'city'     => 'city',
-			'state'    => 'state',
-			'province' => 'region',
-			'country'  => 'country',
-		];
 
 		foreach ( $fields as $field ) {
 			$css_class = $field->cssClass ?? '';
+			$field_key = str_replace( '-', '_', sanitize_title( $field->label ) );
+			// normal zip_code to postal_code mapping
+			if ( 'zip_code' === $field_key ) {
+				$field_key = 'postal_code';
+			}
 
 			if ( str_contains( $css_class, 'radar_autocomplete_field' ) ) {
-				$radar_fields['autocomplete']                                = 'input_' . $id . '_' . $field->id;
-				$radar_fields[ sanitize_title_with_dashes( $field->label ) ] = 'input_' . $id . '_' . $field->id;
+				$radar_fields['autocomplete'] = 'input_' . $id . '_' . $field->id;
+				// also add as a sub-field for adding data
+				$radar_fields[ $field_key ] = 'input_' . $id . '_' . $field->id;
 				continue;
 			}
 
 			if ( 'hidden' === ( $field->type ?? '' ) ) {
 				if ( in_array( $field->label, [ 'Zip', 'Postal', 'City', 'State', 'Province', 'Country' ], true ) ) {
-					$radar_fields[ sanitize_title_with_dashes( $field->label ) ] = 'input_' . $id . '_' . $field->id;
+					$radar_fields[ $field_key ] = 'input_' . $id . '_' . $field->id;
 				}
 				continue;
 			}
 
 			if ( str_contains( $css_class, 'radar_address_field' ) && 'hidden' !== ( $field->type ?? '' ) ) {
-				$radar_fields[ sanitize_title_with_dashes( $field->label ) ] = 'input_' . $id . '_' . $field->id;
+				$radar_fields[ $field_key ] = 'input_' . $id . '_' . $field->id;
 			}
 		}
 

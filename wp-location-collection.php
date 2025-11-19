@@ -99,5 +99,12 @@ class Nami_Location_Collection {
 			src: plugins_url( 'assets/radar.css', __FILE__ ),
 			ver: '0.1.0'
 		);
+
+		wp_register_style(
+			handle: 'radar-frontend',
+			src: plugins_url( 'assets/frontend.css', __FILE__ ),
+			deps: [ 'radar' ],
+			ver: '0.1.0'
+		);
 	}
 }

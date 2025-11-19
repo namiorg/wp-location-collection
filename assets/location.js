@@ -21,7 +21,7 @@
 					responsive: true,
 					width: '600px',
 					onSelection: (result) => {
-						console.log( result );
+						console.log( locationOptions.radarFields['zip-code'] );
 						// street.value = result.addressLabel;
 						// city.value  = result.city;
 						// state.value = result.state;

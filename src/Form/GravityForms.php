@@ -2,9 +2,8 @@
 
 namespace Nami\LocationData\Form;
 
-use JetBrains\PhpStorm\NoReturn;
 use Nami\LocationData\Options\ApiSettings;
-
+use GF_Field_Address;
 /**
  * Gravity Forms Integration Class
  */
@@ -53,6 +52,10 @@ class GravityForms {
 		$selected_form_id = (int) $options['gravity_forms_id'] ?? null;
 		$current_form_id  = (int) $form['id'] ?? null;
 
+		if ( is_admin() ) {
+			return; // no enqueueing in admin area
+		}
+
 		if ( $selected_form_id !== $current_form_id ) {
 			return;
 		}
@@ -72,7 +75,7 @@ class GravityForms {
 
 		// Enqueue custom scripts here
 		wp_enqueue_script( 'nami-location-collection' );
-		wp_enqueue_style( 'radar' );
+		wp_enqueue_style( 'radar-frontend' );
 
 		wp_localize_script(
 			'nami-location-collection',
@@ -94,6 +97,15 @@ class GravityForms {
 	 */
 	public function find_radar_field( array $fields, int $id ): array {
 		$radar_fields = [];
+		$field_map    = [
+			'zip'      => 'postal',
+			'postal'   => 'postal',
+			'city'     => 'city',
+			'state'    => 'state',
+			'province' => 'region',
+			'country'  => 'country',
+		];
+
 		foreach ( $fields as $field ) {
 			$css_class = $field->cssClass ?? '';
 

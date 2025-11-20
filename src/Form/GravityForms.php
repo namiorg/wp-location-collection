@@ -100,6 +100,15 @@ class GravityForms {
 
 		foreach ( $fields as $field ) {
 			$css_class = $field->cssClass ?? '';
+
+			if ( 'address' === $field->type && $field instanceof GF_Field_Address ) {
+
+				foreach ( $field->inputs as $subfield ) {
+					$input = 'input_' . $id . '_' . str_replace( '.', '_', $subfield['id'] );
+				}
+				continue;
+			}
+
 			$field_key = $this->kabob_case_to_camel_case( sanitize_title( $field->label ) );
 
 			// normal zip_code to postal_code mapping
@@ -125,7 +134,7 @@ class GravityForms {
 				$radar_fields[ $field_key ] = 'input_' . $id . '_' . $field->id;
 			}
 		}
-
+//		dd( 'ops' );
 		return $radar_fields;
 	}
 

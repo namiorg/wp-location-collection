@@ -100,10 +100,11 @@ class GravityForms {
 
 		foreach ( $fields as $field ) {
 			$css_class = $field->cssClass ?? '';
-			$field_key = str_replace( '-', '_', sanitize_title( $field->label ) );
+			$field_key = $this->kabob_case_to_camel_case( sanitize_title( $field->label ) );
+
 			// normal zip_code to postal_code mapping
-			if ( 'zip_code' === $field_key ) {
-				$field_key = 'postal_code';
+			if ( 'zipCode' === $field_key ) {
+				$field_key = 'postalCode';
 			}
 
 			if ( str_contains( $css_class, 'radar_autocomplete_field' ) ) {
@@ -126,5 +127,20 @@ class GravityForms {
 		}
 
 		return $radar_fields;
+	}
+
+
+	/**
+	 * Convert kabob-case string to camelCase
+	 *
+	 * @param string $string_to_convert String to convert
+	 *
+	 * @return string
+	 */
+	private function kabob_case_to_camel_case( string $string_to_convert ): string {
+
+		$str = str_replace( '-', '', ucwords( $string_to_convert, '-' ) );
+
+		return lcfirst( $str );
 	}
 }

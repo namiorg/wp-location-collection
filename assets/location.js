@@ -21,12 +21,21 @@
 					responsive: true,
 					width: '600px',
 					onSelection: (result) => {
-						let postalCodeField   = document.getElementById( locationOptions.radarFields['postal_code'] );
-						postalCodeField.value = result.postalCode;
-						// street.value = result.addressLabel;
-						// city.value  = result.city;
-						// state.value = result.state;
-						// zip.value   = result.postalCode;
+						for (let r in result) {
+							if ( ! ! ! locationOptions.radarFields[r]) {
+								console.error( 'No field mapped for ' + r );
+								continue;
+							}
+
+							let field = document.getElementById( locationOptions.radarFields[r] );
+							if ( ! ! ! field) {
+								console.error( 'Mapped field not found: ' + locationOptions.radarFields[r] );
+								continue;
+							}
+							field.value = result[r];
+						}
+
+						// implement address check logic
 						// addressChecked.value = 1;
 					},
 					onResults: (res) => {

@@ -52,7 +52,7 @@ class GravityForms {
 		$selected_form_id = (int) $options['gravity_forms_id'] ?? null;
 		$current_form_id  = (int) $form['id'] ?? null;
 
-		if ( is_admin() ) {
+		if ( is_admin() && ! wp_doing_ajax() ) {
 			return; // no enqueueing in admin area
 		}
 
@@ -97,25 +97,46 @@ class GravityForms {
 	 */
 	public function find_radar_field( array $fields, int $id ): array {
 		$radar_fields = [];
+		// field mapping for Radar api response
+		$field_map = [
+			'Zip'         => 'postalCode',
+			'Postal'      => 'postalCode',
+			'Street'      => 'addressLabel',
+			'City'        => 'city',
+			'State'       => 'state',
+			'Province'    => 'state',
+			'stateCode'   => 'stateCode',
+			'Country'     => 'country',
+			'countryCode' => 'countryCode',
+			'Latitude'    => 'latitude',
+			'Longitude'   => 'longitude',
+		];
 
+		// we use this to check labels for the data we need
 		foreach ( $fields as $field ) {
-			$css_class = $field->cssClass ?? '';
-
+			// we need to handle GF_Field_Address fields differently
 			if ( 'address' === $field->type && $field instanceof GF_Field_Address ) {
+				foreach ( $field->inputs as $index => $subfield ) {
+					$input     = 'input_' . $id . '_' . str_replace( '.', '_', $subfield['id'] );
+					$field_key = $this->get_field( $subfield['label'], $field_map );
+					// first input should have the autocomplete class
+					if ( 0 === $index ) {
+						$radar_fields['autocomplete'] = $input;
+					}
 
-				foreach ( $field->inputs as $subfield ) {
-					$input = 'input_' . $id . '_' . str_replace( '.', '_', $subfield['id'] );
+					$radar_fields[ $field_key ] = $input;
 				}
 				continue;
 			}
 
-			$field_key = $this->kabob_case_to_camel_case( sanitize_title( $field->label ) );
+			$field_key = $this->get_field( $field->label, $field_map );
 
-			// normal zip_code to postal_code mapping
-			if ( 'zipCode' === $field_key ) {
-				$field_key = 'postalCode';
+			// if $field_key is empty, continue — this isn't an address field
+			if ( empty( $field_key ) ) {
+				continue;
 			}
 
+			$css_class = $field->cssClass ?? '';
 			if ( str_contains( $css_class, 'radar_autocomplete_field' ) ) {
 				$radar_fields['autocomplete'] = 'input_' . $id . '_' . $field->id;
 				// also add as a sub-field for adding data
@@ -123,19 +144,31 @@ class GravityForms {
 				continue;
 			}
 
-			if ( 'hidden' === ( $field->type ?? '' ) ) {
-				if ( in_array( $field->label, [ 'Zip', 'Postal', 'City', 'State', 'Province', 'Country' ], true ) ) {
-					$radar_fields[ $field_key ] = 'input_' . $id . '_' . $field->id;
-				}
-				continue;
-			}
+			$radar_fields[ $field_key ] = 'input_' . $id . '_' . $field->id;
+		}
 
-			if ( str_contains( $css_class, 'radar_address_field' ) && 'hidden' !== ( $field->type ?? '' ) ) {
-				$radar_fields[ $field_key ] = 'input_' . $id . '_' . $field->id;
+		return $radar_fields;
+	}
+
+	/**
+	 * Get field key from label using field map
+	 *
+	 * @param string $field Field label to parse
+	 * @param array  $field_map Map of keywords to look for
+	 *
+	 * @return string
+	 */
+	public function get_field( string $field, array $field_map ): mixed {
+		$field_map_keys = array_keys( $field_map );
+		$field_key      = '';
+		foreach ( $field_map_keys as $key ) {
+			if ( str_contains( $field, $key ) ) {
+				$field_key = $field_map[ $key ];
+				break;
 			}
 		}
-//		dd( 'ops' );
-		return $radar_fields;
+
+		return $field_key;
 	}
 
 

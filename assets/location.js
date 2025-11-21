@@ -23,7 +23,6 @@
 					onSelection: (result) => {
 						for (let r in result) {
 							if ( ! ! ! locationOptions.radarFields[r]) {
-								console.error( 'No field mapped for ' + r );
 								continue;
 							}
 
@@ -35,7 +34,7 @@
 							field.value = result[r];
 						}
 
-						// implement address check logic
+						// @todo: implement address check logic
 						// addressChecked.value = 1;
 					},
 					onResults: (res) => {

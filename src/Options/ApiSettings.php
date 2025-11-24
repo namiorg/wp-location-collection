@@ -136,4 +136,15 @@ class ApiSettings {
 	public function init(): void {
 		add_action( 'admin_init', [ $this, 'register_settings' ] );
 	}
+
+	/**
+	 * Get option value by key
+	 *
+	 * @param string $key Option key.
+	 * @return mixed Option value or null if not set.
+	 */
+	public static function get_option( string $key ): mixed {
+		$options = get_option( self::OPTIONS_GROUP );
+		return $options[ $key ] ?? null;
+	}
 }

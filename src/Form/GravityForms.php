@@ -17,6 +17,20 @@ class GravityForms {
 	 */
 	protected static ?GravityForms $instance = null;
 
+	/**
+	 * Selected Gravity Forms Form ID
+	 *
+	 * @var int
+	 */
+	protected int $form_id = 0;
+
+
+	/**
+	 * Fields to be used for Radar API
+	 *
+	 * @var array
+	 */
+	protected array $radar_fields = [];
 
 	/**
 	 * Get Singleton Instance
@@ -37,7 +51,14 @@ class GravityForms {
 	 * @return void
 	 */
 	public function init(): void {
-		add_action( 'gform_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
+		// only proceed if Gravity Forms is active and a form ID is set
+		$this->form_id = ApiSettings::get_option( 'gravity_forms_id', 0 );
+
+		add_action( 'gform_enqueue_scripts', [ $this, 'enqueue_scripts' ], 11 );
+
+		if ( ! empty( $this->form_id ) ) {
+			add_filter( 'gform_validation_' . $this->form_id, [ $this, 'validate_zip_code' ], 10, 2 );
+		}
 	}
 
 	/**
@@ -48,8 +69,7 @@ class GravityForms {
 	 * @return void
 	 */
 	public function enqueue_scripts( array $form ): void {
-		$options          = get_option( ApiSettings::OPTIONS_GROUP );
-		$selected_form_id = (int) $options['gravity_forms_id'] ?? null;
+		$selected_form_id = (int) $this->form_id ?? null;
 		$current_form_id  = (int) $form['id'] ?? null;
 
 		if ( is_admin() && ! wp_doing_ajax() ) {
@@ -184,5 +204,16 @@ class GravityForms {
 		$str = str_replace( '-', '', ucwords( $string_to_convert, '-' ) );
 
 		return lcfirst( $str );
+	}
+
+	public function validate_zip_code( array $validation_result, string $form_context ): array {
+		// Example validation logic for zip code
+		$form = $validation_result['form'];
+		foreach ( $form['fields'] as $field ) {
+			// look for the zip code field
+		}
+
+		$validation_result['form'] = $form;
+		return $validation_result;
 	}
 }

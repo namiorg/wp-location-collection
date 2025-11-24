@@ -39,6 +39,8 @@ register_uninstall_hook(
  */
 class Nami_Location_Collection {
 
+	const string VERSION = '0.1.0';
+
 	/**
 	 * Plugin activation hook
 	 *
@@ -80,7 +82,7 @@ class Nami_Location_Collection {
 		wp_register_script(
 			handle: 'radar',
 			src: plugins_url( 'assets/radar.js', __FILE__ ),
-			ver:'0.1.0',
+			ver: self::VERSION,
 			args: [ 'in_footer' => true ],
 		);
 
@@ -88,7 +90,7 @@ class Nami_Location_Collection {
 			handle: 'nami-location-collection',
 			src: plugins_url( 'assets/location.js', __FILE__ ),
 			deps: [ 'radar' ],
-			ver: '0.1.0',
+			ver: self::VERSION,
 			args: [ 'in_footer' => true ],
 		);
 
@@ -97,14 +99,14 @@ class Nami_Location_Collection {
 		wp_register_style(
 			handle: 'radar',
 			src: plugins_url( 'assets/radar.css', __FILE__ ),
-			ver: '0.1.0'
+			ver: self::VERSION
 		);
 
 		wp_register_style(
 			handle: 'radar-frontend',
 			src: plugins_url( 'assets/frontend.css', __FILE__ ),
 			deps: [ 'radar' ],
-			ver: '0.1.0'
+			ver: self::VERSION
 		);
 	}
 }

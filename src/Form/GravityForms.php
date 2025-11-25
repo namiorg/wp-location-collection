@@ -115,6 +115,7 @@ class GravityForms {
 		$fields       = $form['fields'] ?? [];
 		$radar_fields = $this->find_radar_field( $fields, (int) $form['id'] );
 
+		$api_key = ApiSettings::get_option( 'api_key' );
 		// Enqueue custom scripts here
 		wp_enqueue_script( 'nami-location-collection' );
 		wp_enqueue_style( 'radar-frontend' );
@@ -123,7 +124,7 @@ class GravityForms {
 			'nami-location-collection',
 			'nami_location_collection',
 			[
-				'apiKey'      => $options['api_key'] ?? '',
+				'apiKey'      => $api_key,
 				'radarFields' => $radar_fields,
 			]
 		);

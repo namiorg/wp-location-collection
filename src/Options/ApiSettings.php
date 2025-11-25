@@ -15,12 +15,14 @@ use Nami\LocationData\Admin\SettingsPage;
  */
 class ApiSettings {
 
+
 	/**
 	 * Options group name
 	 *
 	 * @var string
 	 */
 	const string OPTIONS_GROUP = 'nami_location_data_api_settings';
+
 
 	/**
 	 * Default options
@@ -52,6 +54,7 @@ class ApiSettings {
 
 		return self::$instance;
 	}
+
 
 	/**
 	 * Register settings
@@ -114,6 +117,7 @@ class ApiSettings {
 		);
 	}
 
+
 	/**
 	 * Sanitize options
 	 *
@@ -137,14 +141,17 @@ class ApiSettings {
 		add_action( 'admin_init', [ $this, 'register_settings' ] );
 	}
 
+
 	/**
 	 * Get option value by key
 	 *
 	 * @param string $key Option key.
+	 * @param mixed  $default_value Default value if none assigned.
+	 *
 	 * @return mixed Option value or null if not set.
 	 */
-	public static function get_option( string $key ): mixed {
+	public static function get_option( string $key, mixed $default_value = null ): mixed {
 		$options = get_option( self::OPTIONS_GROUP );
-		return $options[ $key ] ?? null;
+		return $options[ $key ] ?? $default_value;
 	}
 }

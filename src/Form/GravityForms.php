@@ -27,10 +27,32 @@ class GravityForms {
 
 	/**
 	 * Fields to be used for Radar API
+	 * Map Radar API response fields to GravityForms fields. Used for populating fields with data from Radar
 	 *
 	 * @var array
 	 */
 	protected array $radar_fields = [];
+
+	/**
+	 * Field-mapping values
+	 * Map field based on label to Radar field
+	 *
+	 * @var array|string[]
+	 */
+	protected array $field_map = [
+		'Zip'         => 'postalCode',
+		'Postal'      => 'postalCode',
+		'Street'      => 'addressLabel',
+		'City'        => 'city',
+		'State'       => 'state',
+		'Province'    => 'state',
+		'stateCode'   => 'stateCode',
+		'Country'     => 'country',
+		'countryCode' => 'countryCode',
+		'Latitude'    => 'latitude',
+		'Longitude'   => 'longitude',
+	];
+
 
 	/**
 	 * Get Singleton Instance
@@ -117,20 +139,6 @@ class GravityForms {
 	 */
 	public function find_radar_field( array $fields, int $id ): array {
 		$radar_fields = [];
-		// field mapping for Radar api response
-		$field_map = [
-			'Zip'         => 'postalCode',
-			'Postal'      => 'postalCode',
-			'Street'      => 'addressLabel',
-			'City'        => 'city',
-			'State'       => 'state',
-			'Province'    => 'state',
-			'stateCode'   => 'stateCode',
-			'Country'     => 'country',
-			'countryCode' => 'countryCode',
-			'Latitude'    => 'latitude',
-			'Longitude'   => 'longitude',
-		];
 
 		// we use this to check labels for the data we need
 		foreach ( $fields as $field ) {
@@ -138,7 +146,7 @@ class GravityForms {
 			if ( 'address' === $field->type && $field instanceof GF_Field_Address ) {
 				foreach ( $field->inputs as $index => $subfield ) {
 					$input     = 'input_' . $id . '_' . str_replace( '.', '_', $subfield['id'] );
-					$field_key = $this->get_field( $subfield['label'], $field_map );
+					$field_key = $this->get_field( $subfield['label'] );
 					// first input should have the autocomplete class
 					if ( 0 === $index ) {
 						$radar_fields['autocomplete'] = $input;
@@ -149,7 +157,7 @@ class GravityForms {
 				continue;
 			}
 
-			$field_key = $this->get_field( $field->label, $field_map );
+			$field_key = $this->get_field( $field->label );
 
 			// if $field_key is empty, continue — this isn't an address field
 			if ( empty( $field_key ) ) {
@@ -174,12 +182,12 @@ class GravityForms {
 	 * Get field key from label using field map
 	 *
 	 * @param string $field Field label to parse
-	 * @param array  $field_map Map of keywords to look for
 	 *
 	 * @return string
 	 */
-	public function get_field( string $field, array $field_map ): mixed {
-		$field_map_keys = array_keys( $field_map );
+	public function get_field( string $field ): mixed {
+		$field_map      = $this->field_map;
+		$field_map_keys = array_keys( $this->field_map );
 		$field_key      = '';
 		foreach ( $field_map_keys as $key ) {
 			if ( str_contains( $field, $key ) ) {

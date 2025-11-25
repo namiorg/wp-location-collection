@@ -7,7 +7,7 @@
  * Author URI:
  * Text Domain:     nami-location-collection
  * Domain Path:     /languages
- * Version:         0.1.0
+ * Version:         0.1.1
  *
  * @package         Nami_Location_Collection
  */
@@ -39,7 +39,7 @@ register_uninstall_hook(
  */
 class Nami_Location_Collection {
 
-	const string VERSION = '0.1.0';
+	const string VERSION = '0.1.1';
 
 	/**
 	 * Plugin activation hook

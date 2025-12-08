@@ -142,6 +142,7 @@ class GravityForms {
 		$radar_fields = [];
 
 		// we use this to check labels for the data we need
+		$field_position = 0;
 		foreach ( $fields as $field ) {
 			// we need to handle GF_Field_Address fields differently
 			if ( 'address' === $field->type && $field instanceof GF_Field_Address ) {
@@ -165,8 +166,8 @@ class GravityForms {
 				continue;
 			}
 
-			$css_class = $field->cssClass ?? '';
-			if ( str_contains( $css_class, 'radar_autocomplete_field' ) ) {
+			$field_position++; // use to find which text address field is first
+			if ( 1 === $field_position ) {
 				$radar_fields['autocomplete'] = 'input_' . $id . '_' . $field->id;
 				// also add as a sub-field for adding data
 				$radar_fields[ $field_key ] = 'input_' . $id . '_' . $field->id;

@@ -34,6 +34,20 @@ jobs:
           echo "slug=${PLUGIN_SLUG}" >> $GITHUB_OUTPUT
           echo "Plugin slug: ${PLUGIN_SLUG}"
 
+      - name: Update version in plugin file
+        run: |
+          # Extract version from tag (remove "v" prefix if present)
+          VERSION="${GITHUB_REF_NAME#v}"
+          echo "Version: ${VERSION}"
+          
+          # Replace {{VERSION}} placeholder in plugin file
+          sed -i "s/{{VERSION}}/${VERSION}/g" wp-location-collection.php
+          
+          # Verify the replacement
+          echo "Updated plugin file:"
+          grep -A 2 "Version:" wp-location-collection.php | head -3
+          grep "const VERSION" wp-location-collection.php
+
       - name: Create plugin zip
         run: |
           PLUGIN_SLUG="${{ steps.slug.outputs.slug }}"

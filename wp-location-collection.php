@@ -4,7 +4,7 @@
  * Plugin URI:
  * Description:     Location data collection plugin for Gravity Forms
  * Author:          NAMI.org
- * Author URI:
+ * Author URI:		NAMI InfoSys Team
  * Text Domain:     nami-location-collection
  * Domain Path:     /languages
  * Version:         0.1.1

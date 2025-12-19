@@ -1,0 +1,19 @@
+{
+  "require-dev": {
+    "wp-cli/i18n-command": "^2",
+    "wp-coding-standards/wpcs": "^3.2",
+    "symfony/var-dumper": "^7.3"
+  },
+  "scripts": {
+    "makepot": "wp i18n make-pot ."
+  },
+  "autoload": {
+    "psr-4": {
+      "Nami\\LocationData\\": "src/"
+    }
+  },
+  "config": {
+    "allow-plugins": {
+      "dealerdirect/phpcodesniffer-composer-installer": true
+    }}
+}

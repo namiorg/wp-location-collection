@@ -1,0 +1,11 @@
+.radar-autocomplete-wrapper {
+	position: absolute !important;
+	z-index: 10 !important;
+	background-color: #ffffff !important;
+}
+
+.radar-autocomplete-results-list li {
+	margin: 10px 0;
+	font-family: sans-serif;
+	font-size: 0.625rem;
+}

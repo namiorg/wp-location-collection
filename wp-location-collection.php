@@ -11,12 +11,17 @@
  *
  * @package         Nami_Location_Collection
  */
+namespace Nami\LocationData;
 
 require_once 'vendor/autoload.php';
 
 if ( class_exists( 'Nami\LocationData\Bootstrap' ) && ! wp_doing_ajax() ) {
+	Nami_Location_Collection::set_plugin_path( plugin_dir_path( __FILE__ ) );
+	Nami_Location_Collection::set_plugin_basename( plugin_basename( __FILE__ ) );
+
 	\Nami\LocationData\Bootstrap::init();
-	add_action( 'wp_enqueue_scripts', [ 'Nami_Location_Collection', 'register_assets' ] );
+
+	add_action( 'wp_enqueue_scripts', [ 'Nami\LocationData\Nami_Location_Collection', 'register_assets' ] );
 }
 
 register_activation_hook(
@@ -43,6 +48,10 @@ class Nami_Location_Collection {
 	 * Plugin version
 	 */
 	const string VERSION = '{{VERSION}}';
+
+	protected static string $plugin_path;
+
+	protected static string $plugin_basename;
 
 	/**
 	 * Plugin activation hook
@@ -111,5 +120,21 @@ class Nami_Location_Collection {
 			deps: [ 'radar' ],
 			ver: self::VERSION
 		);
+	}
+
+	public static function set_plugin_path( $path ): void {
+		self::$plugin_path = $path;
+	}
+
+	public static function set_plugin_basename( $basename ): void {
+		self::$plugin_basename = $basename;
+	}
+
+	public static function get_plugin_path(): string {
+		return self::$plugin_path;
+	}
+
+	public static function get_plugin_basename(): string {
+		return self::$plugin_basename;
 	}
 }

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<project name="wp-location-collection" description="" default="">
+	<!-- ============================================  -->
+	<!-- Target: prepare                               -->
+	<!-- ============================================  -->
+	<target name="prepare">
+		<echo msg="Making directory ./build/wp-location-collection" />
+		<mkdir dir="./build/wp-location-collection" />
+	</target>
+
+	<!-- ============================================  -->
+	<!-- Target: build                                 -->
+	<!-- ============================================  -->
+	<target name="build" depends="prepare">
+		<echo msg="Copying files to build directory..." />
+
+		<echo msg="Copying files to ./build/wp-location-collection directory..." />
+		<copy todir="./build/wp-location-collection" includeemptydirs="true" >
+			<fileset dir="." defaultexcludes="true">
+				<exclude name="build/**" />
+				<exclude name="vendor/**" />
+				<exclude name=".git/**" />
+				<exclude name=".idea/**" />
+				<exclude name=".gitignore" />
+				<exclude name=".editorconfig" />
+				<exclude name="*.xml" />
+				<exclude name="composer.lock" />
+				<exclude name="README.md" />
+			</fileset>
+		</copy>
+
+		<echo msg="Running composer install --no-dev in build directory" />
+		<exec executable="composer" dir="build/wp-location-collection" passthru="yes">
+			<arg value="install"/>
+			<arg value="--no-dev"/>
+		</exec>
+
+		<echo msg="Remove composer files..." />
+		<exec executable="rm" dir="build/wp-location-collection" passthru="yes">
+			<arg value="composer.*" />
+		</exec>
+	</target>
+
+	<!-- ============================================  -->
+	<!-- (DEFAULT)  Target: dist                       -->
+	<!-- ============================================  -->
+	<!--	<target name="dist" depends="build">-->
+	<!--		<echo msg="Creating archive..." />-->
+
+	<!--		<tar destfile="./build/current/mangbuild.tar.gz" compression="gzip">-->
+	<!--			<fileset dir="./build">-->
+	<!--				<include name="*" />-->
+	<!--			</fileset>-->
+	<!--		</tar>-->
+
+	<!--		<echo msg="Files copied and compressed in build directory OK!" />-->
+	<!--	</target>-->
+</project>

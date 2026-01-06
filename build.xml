@@ -21,6 +21,7 @@
 				<exclude name="bin/**" />
 				<exclude name="build/**" />
 				<exclude name="vendor/**" />
+				<exclude name="tests/**" />
 				<exclude name=".git/**" />
 				<exclude name=".circleci/**" />
 				<exclude name=".github/**" />
@@ -60,7 +61,7 @@
 
 		<zip destfile="./build/wp-location-collection.zip">
 			<fileset dir="./build/wp-location-collection">
-				<include name="*" />
+				<include name="*/**" />
 			</fileset>
 		</zip>
 

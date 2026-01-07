@@ -13,7 +13,7 @@
  */
 namespace Nami\LocationData;
 
-require_once 'vendor/autoload.php';
+require_once  plugin_dir_path( __FILE__ ) . 'vendor/autoload.php';
 
 if ( class_exists( 'Nami\LocationData\Bootstrap' ) && ! wp_doing_ajax() ) {
 	Nami_Location_Collection::set_plugin_path( plugin_dir_path( __FILE__ ) );

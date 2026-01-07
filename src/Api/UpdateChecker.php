@@ -123,11 +123,7 @@ class UpdateChecker {
 	public function init(): void
 	{
 		\add_filter( 'plugins_api', [ $this, 'get_plugin_info' ], 20, 3 );
-		\add_filter( 'site_transient_update_plugins', [ $this, 'check_for_update' ] );
-//		\add_filter( 'update_plugins_github.com', function (array|false $update, array $plugin_data) {
-//			dd($update, $plugin_data);
-//			return $update;
-//		}, 10, 2 );
+		\add_filter( 'pre_set_site_transient_update_plugins', [ $this, 'check_for_update' ], 10 );
 		\add_action( 'upgrader_process_complete', [ $this, 'purge' ], 10, 2 );
 	}
 
@@ -249,11 +245,10 @@ class UpdateChecker {
 	 */
 	public function check_for_update( object|bool $transient): object
 	{
+        remove_filter( 'pre_set_site_transient_update_plugins', [ $this, 'check_for_update' ], 10 );
 		// if no update data exists, create a new transient object
 		if ( $transient === false ) {
 			$transient = new \stdClass();
-			$transient->response = [];
-			$transient->checked = [];
 		}
 
 		$metadata_from_server = $this->fetch_update_metadata();

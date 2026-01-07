@@ -265,6 +265,8 @@ class UpdateChecker {
 			$transient->no_update[ $this->plugin_basename ] = $update_data;
 		}
 
+		add_filter( 'pre_set_site_transient_update_plugins', [ $this, 'check_for_update' ], 10 );
+
 		return $transient;
 	}
 

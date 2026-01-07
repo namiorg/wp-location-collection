@@ -13,7 +13,7 @@
  */
 namespace Nami\LocationData;
 
-require_once 'vendor/autoload.php';
+require_once  plugin_dir_path( __FILE__ ) . 'vendor/autoload.php';
 
 if ( class_exists( 'Nami\LocationData\Bootstrap' ) && ! wp_doing_ajax() ) {
 	Nami_Location_Collection::set_plugin_path( plugin_dir_path( __FILE__ ) );
@@ -26,17 +26,17 @@ if ( class_exists( 'Nami\LocationData\Bootstrap' ) && ! wp_doing_ajax() ) {
 
 register_activation_hook(
 	__FILE__,
-	[ 'Nami_Location_Collection', 'activate' ]
+	[ 'Nami\LocationData\Nami_Location_Collection', 'activate' ]
 );
 
 register_deactivation_hook(
 	__FILE__,
-	[ 'Nami_Location_Collection', 'deactivate' ]
+	[ 'Nami\LocationData\Nami_Location_Collection', 'deactivate' ]
 );
 
 register_uninstall_hook(
 	__FILE__,
-	[ 'Nami_Location_Collection', 'uninstall' ]
+	[ 'Nami\LocationData\Nami_Location_Collection', 'uninstall' ]
 );
 
 /**

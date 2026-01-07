@@ -123,7 +123,7 @@ class UpdateChecker {
 	public function init(): void
 	{
 		\add_filter( 'plugins_api', [ $this, 'get_plugin_info' ], 20, 3 );
-		\add_filter( 'site_transient_update_plugins', [ $this, 'check_for_update' ] );
+		\add_filter( 'pre_set_site_transient_update_plugins', [ $this, 'check_for_update' ], 10 );
 		\add_action( 'upgrader_process_complete', [ $this, 'purge' ], 10, 2 );
 	}
 
@@ -240,14 +240,15 @@ class UpdateChecker {
 	 * from the update server, validates it, and updates the transient data with
 	 * the appropriate response for WordPress's update system.
 	 *
-	 * @param object $transient The transient object containing update information for all plugins.
+	 * @param object|bool $transient The transient object containing update information for all plugins.
 	 * @return object The modified transient object with the update information for this plugin.
 	 */
-	public function check_for_update(object $transient ): object
+	public function check_for_update( object|bool $transient): object
 	{
-
-		if ( ! isset( $transient->response ) ) {
-			return $transient;
+        remove_filter( 'pre_set_site_transient_update_plugins', [ $this, 'check_for_update' ], 10 );
+		// if no update data exists, create a new transient object
+		if ( $transient === false ) {
+			$transient = new \stdClass();
 		}
 
 		$metadata_from_server = $this->fetch_update_metadata();
@@ -259,10 +260,12 @@ class UpdateChecker {
 
 		if ( version_compare( $this->plugin_current_version, $update_data->new_version, '<' ) ) {
 			$transient->response[ $this->plugin_basename ] = $update_data;
+			$transient->checked[ $this->plugin_basename ] = $this->plugin_current_version;
 		} elseif ( isset( $transient->no_update ) ) {
 			$transient->no_update[ $this->plugin_basename ] = $update_data;
 		}
 
+		add_filter( 'pre_set_site_transient_update_plugins', [ $this, 'check_for_update' ], 10 );
 		return $transient;
 	}
 

@@ -90,6 +90,7 @@ jobs:
             --exclude='.phpcs.xml.dist' \
             --exclude='phpcs.xml.dist' \
             --exclude='phpcs.dist.xml' \
+            --exclude='build.xml' \
             --exclude='README.md' \
             --exclude='webpack.config.js' \
             --exclude='wp-cli.local.yml' \

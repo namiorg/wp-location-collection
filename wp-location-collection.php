@@ -60,6 +60,8 @@ class Nami_Location_Collection {
 	 */
 	public static function activate() {
 		// check for GravityForms and if not present, deactivate?
+		// delete the update_plugins transient to force refresh of plugin update info
+		delete_site_transient( 'update_plugins' );
 	}
 
 	/**

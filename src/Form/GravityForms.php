@@ -2,6 +2,7 @@
 
 namespace Nami\LocationData\Form;
 
+use Nami\LocationData\Api\RadarAutocomplete;
 use Nami\LocationData\Options\ApiSettings;
 use GF_Field_Address;
 /**
@@ -80,6 +81,7 @@ class GravityForms {
 
 		if ( ! empty( $this->form_id ) ) {
 			add_filter( 'gform_validation_' . $this->form_id, [ $this, 'validate_zip_code' ], 10, 2 );
+			add_action( 'gform_pre_submission_' . $this->form_id, [$this, 'check_fields'], 10 );
 		}
 	}
 
@@ -107,7 +109,6 @@ class GravityForms {
 		// Check if field has the hidden type.
 		// If so, check label index for Zip, Postal, City, State, Province, or Country.
 		// Yes, this is hacky but Gravity Forms does not provide a better way to identify fields.
-		// radar_address_field if the field isn't hidden
 		// the field ID can be constructed as 'input_' . $form_id . '_' . $field_id
 
 		$fields       = $form['fields'] ?? [];
@@ -136,7 +137,7 @@ class GravityForms {
 	 *
 	 * @return array
 	 */
-	public function find_radar_field( array $fields, int $form_id ): array {
+	public function find_radar_field( array $fields, int $form_id, bool $exclude_form_id = false ): array {
 		$radar_fields = [];
 
 		// we use this to check labels for the data we need
@@ -145,9 +146,10 @@ class GravityForms {
 			// we need to handle GF_Field_Address fields differently
 			if ( 'address' === $field->type && $field instanceof GF_Field_Address ) {
 				foreach ( $field->inputs as $index => $subfield ) {
-					$input     = 'input_' . $form_id . '_' . str_replace( '.', '_', $subfield['id'] );
+					$form_id_str = $exclude_form_id ? '' : '_' . $form_id;
+					$input     = 'input' . $form_id_str . str_replace( '.', '_', $subfield['id'] );
 					$field_key = $this->get_field( $subfield['label'] );
-					// first input should have the autocomplete class
+					// first input should be the autocomplete field
 					if ( 0 === $index ) {
 						$radar_fields['autocomplete'] = $input;
 					}
@@ -158,21 +160,21 @@ class GravityForms {
 			}
 
 			$field_key = $this->get_field( $field->label );
-
 			// if $field_key is empty, continue — this isn't an address field
 			if ( empty( $field_key ) ) {
 				continue;
 			}
 
 			$field_position++; // use to find which text address field is first
+			$form_id_str = $exclude_form_id ? '' : '_' . $form_id;
 			if ( 1 === $field_position ) {
-				$radar_fields['autocomplete'] = 'input_' . $form_id . '_' . $field->id;
+				$radar_fields['autocomplete'] = 'input' . $form_id_str . '_' . $field->id;
 				// also add as a sub-field for adding data
-				$radar_fields[ $field_key ] = 'input_' . $form_id . '_' . $field->id;
+				$radar_fields[ $field_key ] = 'input' . $form_id_str . '_' . $field->id;
 				continue;
 			}
 
-			$radar_fields[ $field_key ] = 'input_' . $form_id . '_' . $field->id;
+			$radar_fields[ $field_key ] = 'input' . $form_id_str . '_' . $field->id;
 		}
 
 		return $radar_fields;
@@ -237,5 +239,41 @@ class GravityForms {
 
 		$validation_result['form'] = $form;
 		return $validation_result;
+	}
+
+	public function check_fields( array $form ): void {
+
+		// find radar fields in the form
+		// check which fields are empty
+		$radar_fields = $this->find_radar_field($form['fields'], $form['id'], true);
+		$empty_fields = [];
+		foreach($radar_fields as $radar_field => $field_id_raw) {
+			$field = str_replace( '_' . $form['id'] . '_', '_', $field_id_raw );
+			$field_value = rgpost($field);
+			// Do something with $field_value
+			if (empty($field_value)) {
+				$empty_fields[] = $radar_field;
+			}
+		}
+		// if no empty fields, bail
+		if (empty($empty_fields)) {
+			return;
+		}
+
+		// if we have empty fields, prepare an api call to Radar to fill them
+		$autocomplete_value = rgpost( $radar_fields['autocomplete'] );
+		$addresses = RadarAutocomplete::search( $autocomplete_value );
+
+		if ( empty( $addresses ) ) {
+			return; // if for some reason we get no addresses back, bail
+		}
+
+		// Radar will return multiple addresses, we just want the first one as this one is the most relevant
+		// Use the first address to populate the empty fields
+		foreach ($empty_fields as $empty_field) {
+			$field = $radar_fields[ $empty_field ];
+			// modify the $_POST global to set the value
+			$_POST[ $field ] = esc_sql($addresses[0][ $empty_field ]) ?? ''; // sanitize the value in case GravityForms doesn't
+		}
 	}
 }

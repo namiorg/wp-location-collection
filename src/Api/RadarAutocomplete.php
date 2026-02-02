@@ -34,8 +34,8 @@ class RadarAutocomplete
 		$body = wp_remote_retrieve_body($response);
 		$data = json_decode($body, true);
 
-		if (isset($data['addresses'])) {
-			return $data['addresses'];
+		if (isset($data['addresses'][0])) {
+			return $data['addresses'][0];
 		}
 
 		return [];

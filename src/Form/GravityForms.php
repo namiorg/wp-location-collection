@@ -235,6 +235,13 @@ class GravityForms {
 				$form['fields'][ $index ]['failed_validation'] = true;
 				$form['fields'][ $index ]['validation_message'] = __('Please enter a valid zip code.', 'nami-location-collection');
 			}
+
+			$zipcode_data = RadarAutocomplete::search($field_value);
+			if (empty($zipcode_data)) {
+				$validation_result['is_valid'] = false;
+				$form['fields'][ $index ]['failed_validation'] = true;
+				$form['fields'][ $index ]['validation_message'] = __('Unable to validate the zip code. Please enter a valid zip code.', 'nami-location-collection');
+			}
 		}
 
 		$validation_result['form'] = $form;
@@ -262,9 +269,9 @@ class GravityForms {
 
 		// if we have empty fields, prepare an api call to Radar to fill them
 		$autocomplete_value = rgpost( $radar_fields['autocomplete'] );
-		$addresses = RadarAutocomplete::search( $autocomplete_value );
+		$address = RadarAutocomplete::search( $autocomplete_value );
 
-		if ( empty( $addresses ) ) {
+		if ( empty( $address ) ) {
 			return; // if for some reason we get no addresses back, bail
 		}
 
@@ -273,7 +280,7 @@ class GravityForms {
 		foreach ($empty_fields as $empty_field) {
 			$field = $radar_fields[ $empty_field ];
 			// modify the $_POST global to set the value
-			$_POST[ $field ] = esc_sql($addresses[0][ $empty_field ]) ?? ''; // sanitize the value in case GravityForms doesn't
+			$_POST[ $field ] = esc_sql($address[ $empty_field ]) ?? ''; // sanitize the value in case GravityForms doesn't
 		}
 	}
 }

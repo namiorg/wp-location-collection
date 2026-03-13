@@ -217,7 +217,6 @@ class GravityForms {
 	}
 
 	public function validate_zip_code( array $validation_result, string $form_context ): array {
-		// Example validation logic for zip code
 		$form = $validation_result['form'];
 
 		foreach ( $form['fields'] as $index => $field ) {

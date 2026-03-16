@@ -1,6 +1,6 @@
 # Contributing to WP Location Collection
 
-Thank you for contributing to this project! This document covers the development setup, build process, and how to create a local release. For the full multi-remote Git workflow (promoting changes to production, tagging releases, and syncing tags), see [docs/WORKFLOW.md](docs/WORKFLOW.md).
+Thank you for contributing to this project! This document covers the development setup, build process, and how to create a local release. For the full multi-remote Git workflow (promoting changes to production, tagging releases, and syncing tags), see [docs/WORKFLOW.md](WORKFLOW.md).
 
 ---
 
@@ -9,11 +9,13 @@ Thank you for contributing to this project! This document covers the development
 - **PHP 8.3+**
 - **Composer** – used to install all development dependencies including Phing and the coding-standards tools
 - **Git** – the build script relies on `git describe --tags` to determine the version number
-- A local WordPress installation with Gravity Forms activated (see [README.md](README.md) for the full requirements list)
+- A local WordPress installation with Gravity Forms activated (see [README.md](../README.md) for the full requirements list)
 
 ---
 
 ## Initial Setup
+
+See [docs/WORKFLOW.md](WORKFLOW.md#initial-setup) for instructions on cloning the repository and configuring the Git remotes.
 
 Clone the development repository and install all dependencies:
 
@@ -153,7 +155,7 @@ vendor/bin/phing dist
 
 ## Git Workflow
 
-See [docs/WORKFLOW.md](docs/WORKFLOW.md) for details on:
+See [docs/WORKFLOW.md](WORKFLOW.md) for details on:
 
 - Setting up the dual-remote (`origin` / `prod`) configuration
 - Promoting changes to the production repository via pull request

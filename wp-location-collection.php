@@ -19,6 +19,8 @@ if ( class_exists( 'Nami\LocationData\Bootstrap' ) && ! wp_doing_ajax() ) {
 	Nami_Location_Collection::set_plugin_path( plugin_dir_path( __FILE__ ) );
 	Nami_Location_Collection::set_plugin_basename( plugin_basename( __FILE__ ) );
 
+	load_plugin_textdomain( 'nami-location-collection', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
+
 	\Nami\LocationData\Bootstrap::init();
 
 	add_action( 'wp_enqueue_scripts', [ 'Nami\LocationData\Nami_Location_Collection', 'register_assets' ] );

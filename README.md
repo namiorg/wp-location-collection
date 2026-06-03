@@ -15,3 +15,10 @@
 ## Overview
 
 The WordPress Location Collection Plugin integrates with Gravity Forms to collect and validate user location data during registration using the Radar API. It enhances user registration forms by adding location fields and ensuring the accuracy of the provided location information.
+
+## Documentation
+* [Workflow Guide](docs/WORKFLOW.md)
+<!-- * [User Guide](docs/USER_GUIDE.md) -->
+<!-- * [Developer Guide](docs/DEVELOPER_GUIDE.md) -->
+* [Contributing Guide](docs/CONTRIBUTING.md)
+<!-- * [Changelog](docs/CHANGELOG.md) -->

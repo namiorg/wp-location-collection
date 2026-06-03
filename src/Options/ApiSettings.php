@@ -75,16 +75,16 @@ class ApiSettings {
 
 		add_settings_section(
 			self::OPTIONS_GROUP,
-			'API Settings',
+			esc_html__( 'API Settings', 'nami-location-collection' ),
 			function () {
-				echo '<p>Add API key and endpoint.</p>';
+				echo '<p>' . esc_html__( 'Add API key and endpoint.', 'nami-location-collection' ) . '</p>';
 			},
 			self::OPTIONS_GROUP
 		);
 
 		add_settings_field(
 			'api_key',
-			'API Key',
+			esc_html__( 'API Key', 'nami-location-collection' ),
 			function () {
 				$options = get_option( self::OPTIONS_GROUP, $this->default_options );
 				$api_key = $options['api_key'] ?? '';
@@ -98,14 +98,14 @@ class ApiSettings {
 
 		add_settings_field(
 			'gravity_forms_id',
-			'Gravity Forms Form ID',
+			esc_html__( 'Gravity Forms Form ID', 'nami-location-collection' ),
 			function () {
 				$options = get_option( self::OPTIONS_GROUP, $this->default_options );
 				$gravity_forms_id = $options['gravity_forms_id'] ?? '';
 				$forms   = GFAPI::get_forms();
 				?>
 				<select name="<?php echo esc_attr( self::OPTIONS_GROUP ); ?>[gravity_forms_id]" id="">
-					<option value=""><?php esc_html_e( 'Select a form', 'wp-location-collection' ); ?></option>
+					<option value=""><?php esc_html_e( 'Select a form', 'nami-location-collection' ); ?></option>
 					<?php foreach ( $forms as $form ) : ?>
 						<option value="<?php echo esc_attr( $form['id'] ); ?>" <?php selected( $gravity_forms_id, $form['id'] ); ?>>
 							<?php echo esc_html( $form['title'] ); ?>
@@ -121,13 +121,13 @@ class ApiSettings {
 
 		add_settings_field(
 			'limit_to_country',
-			'Limit to Country',
+			esc_html__( 'Limit to Country', 'nami-location-collection' ),
 			function () {
 				$options = get_option( self::OPTIONS_GROUP, $this->default_options );
 				$limit_to_country = $options['limit_to_country'] ?? '';
 				?>
 				<input type="text" name="<?php echo esc_attr( self::OPTIONS_GROUP ); ?>[limit_to_country]" value="<?php echo esc_attr( $limit_to_country ); ?>" class="regular-text" />
-				<p class="description"><?php esc_html__('Enter a comma-delineated list of country codes (e.g., US) to limit location autocomplete to that country. Leave blank to turn limiting off.', 'nami-location-collection');?></p>
+				<p class="description"><?php esc_html_e( 'Enter a comma-delineated list of country codes (e.g., US) to limit location autocomplete to that country. Leave blank to turn limiting off.', 'nami-location-collection' ); ?></p>
 				<?php
 			},
 			self::OPTIONS_GROUP,

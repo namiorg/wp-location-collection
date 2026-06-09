@@ -6,6 +6,12 @@ on:
       - '*'
   release:
     types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g. 1.2.3). Creates and pushes the tag v<version>.'
+        required: true
+        type: string
 
 jobs:
   build:
@@ -17,6 +23,21 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Resolve version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            # Manual run: take the version from the input. The tag itself is created by the
+            # "Upload release asset" step (tag_name below) so we don't trigger a second run.
+            VERSION="${{ inputs.version }}"
+            VERSION="${VERSION#v}"
+          else
+            # Tag push / release: derive the version from the ref.
+            VERSION="${GITHUB_REF_NAME#v}"
+          fi
+          echo "Version: ${VERSION}"
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -36,8 +57,7 @@ jobs:
 
       - name: Update version in plugin file
         run: |
-          # Extract version from tag (remove "v" prefix if present)
-          VERSION="${GITHUB_REF_NAME#v}"
+          VERSION="${{ steps.version.outputs.version }}"
           echo "Version: ${VERSION}"
 
           # Replace {{VERSION}} placeholder in plugin file
@@ -57,50 +77,7 @@ jobs:
 
           # Copy all files
           rsync -av --progress . /tmp/plugin-build/${PLUGIN_SLUG}/ \
-            --exclude='.git' \
-            --exclude='.github' \
-            --exclude='.circleci' \
-            --exclude='.babelrc' \
-            --exclude='.deployignore' \
-            --exclude='.distignore' \
-            --exclude='.editorconfig' \
-            --exclude='.eslintignore' \
-            --exclude='.eslintrc' \
-            --exclude='.gitignore' \
-            --exclude='.gitlab-ci.yml' \
-            --exclude='.travis.yml' \
-            --exclude='.DS_Store' \
-            --exclude='.*~' \
-            --exclude='Thumbs.db' \
-            --exclude='behat.yml' \
-            --exclude='bitbucket-pipelines.yml' \
-            --exclude='bin' \
-            --exclude='composer.json' \
-            --exclude='composer.lock' \
-            --exclude='dependencies.yml' \
-            --exclude='Gruntfile.js' \
-            --exclude='package.json' \
-            --exclude='package-lock.json' \
-            --exclude='phpunit.xml' \
-            --exclude='phpunit.xml.dist' \
-            --exclude='multisite.xml' \
-            --exclude='multisite.xml.dist' \
-            --exclude='.phpcs.xml' \
-            --exclude='phpcs.xml' \
-            --exclude='.phpcs.xml.dist' \
-            --exclude='phpcs.xml.dist' \
-            --exclude='phpcs.dist.xml' \
-            --exclude='build.xml' \
-            --exclude='README.md' \
-            --exclude='webpack.config.js' \
-            --exclude='wp-cli.local.yml' \
-            --exclude='yarn.lock' \
-            --exclude='tests' \
-            --exclude='node_modules' \
-            --exclude='*.sql' \
-            --exclude='*.tar.gz' \
-            --exclude='*.zip' \
-            --exclude='manifest.json'
+            --exclude-from=".distignore"
 
           # Create zip file
           cd /tmp/plugin-build
@@ -114,8 +91,10 @@ jobs:
 
       - name: Upload release asset
         uses: softprops/action-gh-release@v1
-        if: github.event_name == 'release' || startsWith(github.ref, 'refs/tags/')
+        if: github.event_name == 'release' || startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
         with:
+          # On a manual run github.ref is a branch, so target the tag we created in "Resolve version".
+          tag_name: v${{ steps.version.outputs.version }}
           files: ${{ steps.slug.outputs.slug }}.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

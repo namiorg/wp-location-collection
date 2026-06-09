@@ -232,14 +232,14 @@ class GravityForms {
 			if ($field_length < 5 || $field_length > 10) {
 				$validation_result['is_valid'] = false;
 				$form['fields'][ $index ]['failed_validation'] = true;
-				$form['fields'][ $index ]['validation_message'] = __('Please enter a valid zip code.', 'nami-location-collection');
+				$form['fields'][ $index ]['validation_message'] = __('Please enter a valid zip code.', 'wp-location-collection');
 			}
 
 			$zipcode_data = RadarAutocomplete::search($field_value);
 			if (empty($zipcode_data)) {
 				$validation_result['is_valid'] = false;
 				$form['fields'][ $index ]['failed_validation'] = true;
-				$form['fields'][ $index ]['validation_message'] = __('Unable to validate the zip code. Please enter a valid zip code.', 'nami-location-collection');
+				$form['fields'][ $index ]['validation_message'] = __('Unable to validate the zip code. Please enter a valid zip code.', 'wp-location-collection');
 			}
 		}
 

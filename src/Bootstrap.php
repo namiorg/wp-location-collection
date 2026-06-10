@@ -12,6 +12,10 @@ use Nami\LocationData\Api\UpdateChecker;
 use Nami\LocationData\Form\GravityForms;
 use Nami\LocationData\Options\ApiSettings;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * Bootstrap Class
  */

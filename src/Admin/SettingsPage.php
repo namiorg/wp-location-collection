@@ -9,6 +9,10 @@ namespace Nami\LocationData\Admin;
 
 use Nami\LocationData\Options\ApiSettings;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * Settings Class
  */

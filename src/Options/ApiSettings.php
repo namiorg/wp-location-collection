@@ -94,7 +94,7 @@ class ApiSettings {
 				$api_key = $options['api_key'] ?? '';
 				?>
 				<input type="text" name="<?php echo esc_attr( self::OPTIONS_GROUP ); ?>[api_key]" value="<?php echo esc_attr( $api_key ); ?>" class="regular-text" />
-				<p class="description"><?php esc_html_e( 'Radar publishable key (prj_live_pk_… or prj_test_pk_…). Never use a secret (sk) key — this key is sent to visitors’ browsers.', 'nami-location-collection' ); ?></p>
+				<p class="description"><?php esc_html_e( 'Radar publishable key (prj_live_pk_… or prj_test_pk_…). Never use a secret (sk) key — this key is sent to visitors’ browsers.', 'wp-location-collection' ); ?></p>
 				<?php
 			},
 			self::OPTIONS_GROUP,
@@ -178,7 +178,7 @@ class ApiSettings {
 		add_settings_error(
 			self::OPTIONS_GROUP,
 			'invalid_api_key',
-			esc_html__( 'The API key was not saved: it must be a Radar publishable key (prj_live_pk_… or prj_test_pk_…). This key is sent to visitors’ browsers, so a secret (sk) key must never be used here.', 'nami-location-collection' )
+			esc_html__( 'The API key was not saved: it must be a Radar publishable key (prj_live_pk_… or prj_test_pk_…). This key is sent to visitors’ browsers, so a secret (sk) key must never be used here.', 'wp-location-collection' )
 		);
 
 		return (string) self::get_option( 'api_key', '' );

@@ -142,7 +142,7 @@ class UpdateChecker {
 	 *                         object containing the plugin metadata if valid data is retrieved.
 	 */
 	public function get_plugin_info( $result, $action = null, $args = null ) {
-		if ( $action !== 'plugin_information' || $this->plugin_dirname !== $args->slug ) {
+		if ( $action !== 'plugin_information' || ! is_object( $args ) || ! isset( $args->slug ) || $this->plugin_dirname !== $args->slug ) {
 			return $result;
 		}
 
@@ -151,23 +151,28 @@ class UpdateChecker {
 			return $result;
 		}
 
+		$update_data = $this->prepare_plugin_update_data( $metadata_from_server );
+
+		$download_url = $update_data->package;
+		if ( ! $this->is_trusted_download_url( $download_url ) ) {
+			$download_url = '';
+		}
+
+		// The GitHub releases payload only carries release data (tag, assets,
+		// notes), so display fields come from the local plugin headers.
+		$plugin_data = $this->get_local_plugin_data();
+
 		$result = new \stdClass();
-		$result->name = $metadata_from_server['name'] ?? '';
-		$result->slug = $metadata_from_server['slug'] ?? '';
-		$result->version = $metadata_from_server['version'] ?? '';
-		$result->tested = $metadata_from_server['tested'] ?? '';
-		$result->requires = $metadata_from_server['requires'] ?? '';
-		$result->author = $metadata_from_server['author'] ?? '';
-		$result->author_profile = $metadata_from_server['author_profile'] ?? '';
-		$result->download_link = $metadata_from_server['download_url'] ?? '';
-		$result->trunk = $metadata_from_server['download_url'] ?? '';
-		$result->requires_php = $metadata_from_server['requires_php'] ?? '';
-		$result->last_updated = $metadata_from_server['last_updated'] ?? '';
+		$result->name = $plugin_data['Name'] ?: $this->plugin_dirname;
+		$result->slug = $this->plugin_dirname;
+		$result->version = $update_data->new_version;
+		$result->author = $plugin_data['Author'] ?? '';
+		$result->download_link = $download_url;
+		$result->trunk = $download_url;
+		$result->last_updated = $metadata_from_server['published_at'] ?? '';
 		$result->sections = array(
-			'description' => $metadata_from_server['sections']['description'] ?? '',
-			'installation' => $metadata_from_server['sections']['installation'] ?? '',
-			'changelog' => $metadata_from_server['sections']['changelog'] ?? '',
-			'upgrade_notice' => $metadata_from_server['sections']['upgrade_notice'] ?? '',
+			'description' => $plugin_data['Description'] ?? '',
+			'changelog' => \wp_kses_post( \wpautop( $metadata_from_server['body'] ?? '' ) ),
 		);
 
 		return $result;
@@ -193,8 +198,8 @@ class UpdateChecker {
 	public function fetch_update_metadata(): array|\WP_Error {
 		$data_from_server = \get_transient( $this->cache_key );
 
-		$force_update = \sanitize_text_field( $_GET['force-check'] ?? '' );
-		if ( $force_update === '1' && $this->already_forced === false ) {
+		$force_update = \sanitize_text_field( \wp_unslash( $_GET['force-check'] ?? '' ) );
+		if ( $force_update === '1' && $this->already_forced === false && \current_user_can( 'update_plugins' ) ) {
 			$data_from_server = false;
 			$this->already_forced = true;
 		}
@@ -257,6 +262,12 @@ class UpdateChecker {
 		}
 
 		$update_data = $this->prepare_plugin_update_data( $metadata_from_server );
+
+		// The package is installed with full plugin privileges, so never
+		// offer an update whose download URL isn't this repository's.
+		if ( ! $this->is_trusted_download_url( $update_data->package ) ) {
+			return $transient;
+		}
 
 		if ( version_compare( $this->plugin_current_version, $update_data->new_version, '<' ) ) {
 			$transient->response[ $this->plugin_basename ] = $update_data;
@@ -365,6 +376,38 @@ class UpdateChecker {
 	private function set_cache_key(): void
 	{
 		$this->cache_key = $this->plugin_dirname . '_update_data';
+	}
+
+	/**
+	 * Reads the installed plugin's headers for display in the plugin info modal.
+	 *
+	 * @return array Plugin header data keyed by header name (Name, Author, Description, ...).
+	 */
+	private function get_local_plugin_data(): array {
+		if ( ! function_exists( 'get_plugin_data' ) ) {
+			require_once \ABSPATH . 'wp-admin/includes/plugin.php';
+		}
+
+		return \get_plugin_data( \WP_PLUGIN_DIR . '/' . $this->plugin_basename, false, false );
+	}
+
+	/**
+	 * Validates that a release download URL points to this plugin's GitHub repository.
+	 *
+	 * @param string $url The download URL from the release metadata.
+	 * @return bool True if the URL is an HTTPS link to this repository's releases.
+	 */
+	private function is_trusted_download_url( string $url ): bool {
+		if ( ! \wp_http_validate_url( $url ) ) {
+			return false;
+		}
+
+		$parts = \wp_parse_url( $url );
+		if ( ( $parts['scheme'] ?? '' ) !== 'https' || ( $parts['host'] ?? '' ) !== 'github.com' ) {
+			return false;
+		}
+
+		return \str_starts_with( $parts['path'] ?? '', '/namiorg/wp-location-collection/' );
 	}
 
 	/**

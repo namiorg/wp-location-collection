@@ -10,6 +10,10 @@ namespace Nami\LocationData\Options;
 use GFAPI;
 use Nami\LocationData\Admin\SettingsPage;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * API Settings Class
  */
@@ -90,6 +94,7 @@ class ApiSettings {
 				$api_key = $options['api_key'] ?? '';
 				?>
 				<input type="text" name="<?php echo esc_attr( self::OPTIONS_GROUP ); ?>[api_key]" value="<?php echo esc_attr( $api_key ); ?>" class="regular-text" />
+				<p class="description"><?php esc_html_e( 'Radar publishable key (prj_live_pk_… or prj_test_pk_…). Never use a secret (sk) key — this key is sent to visitors’ browsers.', 'nami-location-collection' ); ?></p>
 				<?php
 			},
 			self::OPTIONS_GROUP,
@@ -143,12 +148,51 @@ class ApiSettings {
 	 * @return array Sanitized options.
 	 */
 	public function sanitize_options( array $input ): array {
+		$api_key = $input['api_key'] ?? '';
+
 		$sanitized                     = [];
-		$sanitized['api_key']          = sanitize_text_field( $input['api_key'] ?? '' );
+		$sanitized['api_key']          = $this->sanitize_api_key( is_string( $api_key ) ? $api_key : '' );
 		$sanitized['gravity_forms_id'] = absint( $input['gravity_forms_id'] ?? 0 );
 		$sanitized['limit_to_country'] = sanitize_text_field( $input['limit_to_country'] ?? $this->default_options['limit_to_country'] );
 
 		return array_merge( $this->default_options, $sanitized );
+	}
+
+
+	/**
+	 * Sanitize the API key, allowing only Radar publishable keys.
+	 *
+	 * The key is sent to visitors' browsers via wp_localize_script(), so a
+	 * secret (sk) key must never be stored here.
+	 *
+	 * @param string $api_key Submitted API key.
+	 * @return string The validated key, or the previously saved key if invalid.
+	 */
+	protected function sanitize_api_key( string $api_key ): string {
+		$api_key = sanitize_text_field( $api_key );
+
+		if ( '' === $api_key || self::is_publishable_key( $api_key ) ) {
+			return $api_key;
+		}
+
+		add_settings_error(
+			self::OPTIONS_GROUP,
+			'invalid_api_key',
+			esc_html__( 'The API key was not saved: it must be a Radar publishable key (prj_live_pk_… or prj_test_pk_…). This key is sent to visitors’ browsers, so a secret (sk) key must never be used here.', 'nami-location-collection' )
+		);
+
+		return (string) self::get_option( 'api_key', '' );
+	}
+
+
+	/**
+	 * Check whether a key is a Radar publishable key.
+	 *
+	 * @param string $api_key API key to check.
+	 * @return bool
+	 */
+	public static function is_publishable_key( string $api_key ): bool {
+		return 1 === preg_match( '/^prj_(test|live)_pk_/', $api_key );
 	}
 
 

@@ -5,7 +5,7 @@
  * Description: Location data collection plugin for Gravity Forms
  * Author: NAMI InfoSys Team
  * Author URI:	nami.org
- * Text Domain: nami-location-collection
+ * Text Domain: wp-location-collection
  * Domain Path: /languages
  * Version: {{VERSION}}
  *
@@ -23,7 +23,7 @@ if ( class_exists( 'Nami\LocationData\Bootstrap' ) && ! wp_doing_ajax() ) {
 	Nami_Location_Collection::set_plugin_path( plugin_dir_path( __FILE__ ) );
 	Nami_Location_Collection::set_plugin_basename( plugin_basename( __FILE__ ) );
 
-	load_plugin_textdomain( 'nami-location-collection', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
+	load_plugin_textdomain( 'wp-location-collection', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
 
 	\Nami\LocationData\Bootstrap::init();
 

@@ -70,8 +70,8 @@ class SettingsPage {
 	 */
 	public function admin_menu(): void {
 		$this->page_hook = add_options_page(
-			esc_html__( 'Location Data Collection Settings', 'nami-location-collection' ),
-			esc_html__( 'Location Data', 'nami-location-collection' ),
+			esc_html__( 'Location Data Collection Settings', 'wp-location-collection' ),
+			esc_html__( 'Location Data', 'wp-location-collection' ),
 			'activate_plugins',
 			self::ADMIN_PAGE_SLUG,
 			[ $this, 'output_admin_page' ]
@@ -87,7 +87,7 @@ class SettingsPage {
 	public function output_admin_page(): void {
 		?>
 		<div class="wrap">
-			<h1><?php esc_html_e( 'Location Data Collection Settings', 'nami-location-collection' ); ?></h1>
+			<h1><?php esc_html_e( 'Location Data Collection Settings', 'wp-location-collection' ); ?></h1>
 			<form method="post" action="<?php echo esc_url( admin_url( 'options.php' ) ); ?>">
 				<?php
 				settings_fields( ApiSettings::OPTIONS_GROUP );

@@ -5,6 +5,11 @@ namespace Nami\LocationData\Form;
 use Nami\LocationData\Api\RadarAutocomplete;
 use Nami\LocationData\Options\ApiSettings;
 use GF_Field_Address;
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * Gravity Forms Integration Class
  */
@@ -118,11 +123,15 @@ class GravityForms {
 		wp_enqueue_script( 'nami-location-collection' );
 		wp_enqueue_style( 'radar-frontend' );
 
+		// This data is visible to every visitor, so only ever expose a
+		// publishable key — a secret key must not leave the server.
+		$api_key = (string) ApiSettings::get_option( 'api_key', '' );
+
 		wp_localize_script(
 			'nami-location-collection',
 			'nami_location_collection',
 			[
-				'apiKey'      => ApiSettings::get_option( 'api_key' ),
+				'apiKey'      => ApiSettings::is_publishable_key( $api_key ) ? $api_key : '',
 				'radarFields' => $radar_fields,
 				'countryCode' => ApiSettings::get_option( 'limit_to_country', 'null' ),
 			]
@@ -228,11 +237,12 @@ class GravityForms {
 			$field_id = 'input_' . $field->id;
 
 			$field_value = rgpost($field_id);
-			$field_length = strlen($field_value);
+			$field_length = is_string($field_value) ? strlen($field_value) : 0;
 			if ($field_length < 5 || $field_length > 10) {
 				$validation_result['is_valid'] = false;
 				$form['fields'][ $index ]['failed_validation'] = true;
 				$form['fields'][ $index ]['validation_message'] = __('Please enter a valid zip code.', 'nami-location-collection');
+				continue; // already invalid — don't relay the value to the Radar API
 			}
 
 			$zipcode_data = RadarAutocomplete::search($field_value);
@@ -267,6 +277,10 @@ class GravityForms {
 		}
 
 		// if we have empty fields, prepare an api call to Radar to fill them
+		if ( empty( $radar_fields['autocomplete'] ) ) {
+			return; // no autocomplete field mapped, nothing to look up
+		}
+
 		$autocomplete_value = rgpost( $radar_fields['autocomplete'] );
 		$address = RadarAutocomplete::search( $autocomplete_value );
 
@@ -279,7 +293,7 @@ class GravityForms {
 		foreach ($empty_fields as $empty_field) {
 			$field = $radar_fields[ $empty_field ];
 			// modify the $_POST global to set the value
-			$_POST[ $field ] = esc_sql($address[ $empty_field ]) ?? ''; // sanitize the value in case GravityForms doesn't
+			$_POST[ $field ] = sanitize_text_field( (string) ( $address[ $empty_field ] ?? '' ) ); // sanitize the value in case GravityForms doesn't
 		}
 	}
 }

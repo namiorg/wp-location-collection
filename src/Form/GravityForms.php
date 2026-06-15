@@ -59,6 +59,24 @@ class GravityForms {
 		'Longitude'   => 'longitude',
 	];
 
+	/**
+	 * Radar keys for Gravity Forms Address sub-inputs.
+	 *
+	 * Address sub-input IDs are fixed by Gravity Forms regardless of label or
+	 * language — <field>.1 street, .2 line 2, .3 city, .4 state, .5 zip,
+	 * .6 country — so mapping by sub-input ID is translation-proof. (.2 has no
+	 * Radar equivalent and is intentionally omitted.)
+	 *
+	 * @var array|string[]
+	 */
+	protected array $address_subfield_map = [
+		'1' => 'addressLabel',
+		'3' => 'city',
+		'4' => 'state',
+		'5' => 'postalCode',
+		'6' => 'country',
+	];
+
 
 	/**
 	 * Get Singleton Instance
@@ -148,45 +166,104 @@ class GravityForms {
 	 */
 	public function find_radar_field( array $fields, int $form_id, bool $exclude_form_id = false ): array {
 		$radar_fields = [];
+		$form_id_str  = $exclude_form_id ? '' : '_' . $form_id;
 
-		// we use this to check labels for the data we need
-		$field_position = 0;
 		foreach ( $fields as $field ) {
-			// we need to handle GF_Field_Address fields differently
+			// Gravity Forms Address fields expose their parts as sub-inputs with
+			// fixed IDs (.1 street, .3 city, .4 state, .5 zip, .6 country), so map
+			// them by sub-input ID — independent of the label's language. Forms
+			// built from standalone text fields fall through to the label /
+			// admin-label / CSS-class resolution below.
 			if ( 'address' === $field->type && $field instanceof GF_Field_Address ) {
-				foreach ( $field->inputs as $index => $subfield ) {
-					$form_id_str = $exclude_form_id ? '' : '_' . $form_id;
-					$input     = 'input' . $form_id_str . str_replace( '.', '_', $subfield['id'] );
-					$field_key = $this->get_field( $subfield['label'] );
-					// first input should be the autocomplete field
-					if ( 0 === $index ) {
-						$radar_fields['autocomplete'] = $input;
+				foreach ( $field->inputs as $subfield ) {
+					$parts     = explode( '.', (string) ( $subfield['id'] ?? '' ) );
+					$field_key = $this->address_subfield_map[ end( $parts ) ] ?? '';
+					if ( empty( $field_key ) ) {
+						continue;
 					}
 
+					// GF renders sub-inputs as input_<form>_<field>_<sub> (DOM id)
+					// or input_<field>_<sub> (POST name, when form id excluded);
+					// either way a separator precedes the field/sub id.
+					$input                      = 'input' . $form_id_str . '_' . str_replace( '.', '_', $subfield['id'] );
 					$radar_fields[ $field_key ] = $input;
+
+					// Anchor the autocomplete on the visible zip sub-input.
+					if ( 'postalCode' === $field_key && empty( $subfield['isHidden'] ) ) {
+						$radar_fields['autocomplete'] = $input;
+					}
 				}
 				continue;
 			}
 
-			$field_key = $this->get_field( $field->label );
+			$field_key = $this->resolve_field_key( $field );
 			// if $field_key is empty, continue — this isn't an address field
 			if ( empty( $field_key ) ) {
 				continue;
 			}
 
-			$field_position++; // use to find which text address field is first
-			$form_id_str = $exclude_form_id ? '' : '_' . $form_id;
-			if ( 1 === $field_position ) {
-				$radar_fields['autocomplete'] = 'input' . $form_id_str . '_' . $field->id;
-				// also add as a sub-field for adding data
-				$radar_fields[ $field_key ] = 'input' . $form_id_str . '_' . $field->id;
-				continue;
-			}
+			$input                      = 'input' . $form_id_str . '_' . $field->id;
+			$radar_fields[ $field_key ] = $input;
 
-			$radar_fields[ $field_key ] = 'input' . $form_id_str . '_' . $field->id;
+			// Anchor the Radar autocomplete on the zip field specifically.
+			// location.js searches `layers: postalCode`, so the visible zip
+			// input is the correct host. The previous logic anchored on the
+			// first address-ish field by document order, which on some forms is
+			// a hidden City/State field — Radar then attaches to an invisible
+			// element and the autocomplete silently never appears. Hidden fields
+			// stay in the map (they are auto-filled on selection) but are never
+			// used as the anchor.
+			if ( 'postalCode' === $field_key && ! $this->is_hidden_field( $field ) ) {
+				$radar_fields['autocomplete'] = $input;
+			}
 		}
 
 		return $radar_fields;
+	}
+
+	/**
+	 * Determine whether a Gravity Forms field is hidden from the visitor.
+	 *
+	 * Covers both hidden-type fields and fields set to hidden/administrative
+	 * visibility. Such fields can't host a visible autocomplete UI.
+	 *
+	 * @param object $field The Gravity Forms field.
+	 * @return bool True if the field is not visible to the visitor.
+	 */
+	private function is_hidden_field( object $field ): bool {
+		return 'hidden' === ( $field->type ?? '' ) || 'visible' !== ( $field->visibility ?? 'visible' );
+	}
+
+	/**
+	 * Resolve a field's Radar key from the most translation-stable source.
+	 *
+	 * Visitor-facing labels are translated (e.g. English vs Spanish), which
+	 * breaks label matching. The Admin Field Label and a CSS class are admin-set
+	 * and never translated, so they are checked first; the visitor label stays a
+	 * fallback so existing English forms keep working with no reconfiguration.
+	 *
+	 * To tag a field on a translated form, set its Admin Field Label (e.g. "Zip",
+	 * "City", "State") or add a CSS class containing the same keyword (e.g.
+	 * "radar-zip").
+	 *
+	 * @param object $field The Gravity Forms field.
+	 * @return string The Radar field key, or '' if nothing matched.
+	 */
+	private function resolve_field_key( object $field ): string {
+		$sources = [
+			$field->adminLabel ?? '',
+			$field->cssClass ?? '',
+			$field->label ?? '',
+		];
+
+		foreach ( $sources as $source ) {
+			$field_key = $this->get_field( (string) $source );
+			if ( ! empty( $field_key ) ) {
+				return $field_key;
+			}
+		}
+
+		return '';
 	}
 
 	/**
@@ -197,12 +274,13 @@ class GravityForms {
 	 * @return string
 	 */
 	public function get_field( string $field ): mixed {
-		$field_map      = $this->field_map;
-		$field_map_keys = array_keys( $this->field_map );
-		$field_key      = '';
-		foreach ( $field_map_keys as $key ) {
-			if ( str_contains( $field, $key ) ) {
-				$field_key = $field_map[ $key ];
+		$field_key = '';
+		foreach ( $this->field_map as $key => $mapped ) {
+			// Case-insensitive so labels like "ZIP Code" or "zip code" match
+			// the "Zip" key — case-sensitive matching missed them, leaving the
+			// zip field undetected and the autocomplete with no field to anchor.
+			if ( stripos( $field, $key ) !== false ) {
+				$field_key = $mapped;
 				break;
 			}
 		}
@@ -230,7 +308,7 @@ class GravityForms {
 
 		foreach ( $form['fields'] as $index => $field ) {
 			// look for the zip code field
-			$field_key = $this->get_field( $field['label'] );
+			$field_key = $this->resolve_field_key( $field );
 			if ( 'postalCode' !== $field_key ) {
 				continue;
 			}

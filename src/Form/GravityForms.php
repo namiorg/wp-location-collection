@@ -170,7 +170,7 @@ class GravityForms {
 				continue;
 			}
 
-			$field_key = $this->get_field( $field->label );
+			$field_key = $this->resolve_field_key( $field );
 			// if $field_key is empty, continue — this isn't an address field
 			if ( empty( $field_key ) ) {
 				continue;
@@ -206,6 +206,38 @@ class GravityForms {
 	 */
 	private function is_hidden_field( object $field ): bool {
 		return 'hidden' === ( $field->type ?? '' ) || 'visible' !== ( $field->visibility ?? 'visible' );
+	}
+
+	/**
+	 * Resolve a field's Radar key from the most translation-stable source.
+	 *
+	 * Visitor-facing labels are translated (e.g. English vs Spanish), which
+	 * breaks label matching. The Admin Field Label and a CSS class are admin-set
+	 * and never translated, so they are checked first; the visitor label stays a
+	 * fallback so existing English forms keep working with no reconfiguration.
+	 *
+	 * To tag a field on a translated form, set its Admin Field Label (e.g. "Zip",
+	 * "City", "State") or add a CSS class containing the same keyword (e.g.
+	 * "radar-zip").
+	 *
+	 * @param object $field The Gravity Forms field.
+	 * @return string The Radar field key, or '' if nothing matched.
+	 */
+	private function resolve_field_key( object $field ): string {
+		$sources = [
+			$field->adminLabel ?? '',
+			$field->cssClass ?? '',
+			$field->label ?? '',
+		];
+
+		foreach ( $sources as $source ) {
+			$field_key = $this->get_field( (string) $source );
+			if ( ! empty( $field_key ) ) {
+				return $field_key;
+			}
+		}
+
+		return '';
 	}
 
 	/**
@@ -250,7 +282,7 @@ class GravityForms {
 
 		foreach ( $form['fields'] as $index => $field ) {
 			// look for the zip code field
-			$field_key = $this->get_field( $field['label'] );
+			$field_key = $this->resolve_field_key( $field );
 			if ( 'postalCode' !== $field_key ) {
 				continue;
 			}

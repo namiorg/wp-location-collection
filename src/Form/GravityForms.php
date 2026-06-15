@@ -40,6 +40,17 @@ class GravityForms {
 	protected array $radar_fields = [];
 
 	/**
+	 * Whether the frontend config has already been localized this request.
+	 *
+	 * Gravity Forms fires `gform_enqueue_scripts` more than once per request,
+	 * and wp_localize_script() concatenates rather than replaces, so this
+	 * guards against emitting the config object multiple times.
+	 *
+	 * @var bool
+	 */
+	protected bool $localized = false;
+
+	/**
 	 * Field-mapping values
 	 * Map field based on label to Radar field
 	 *
@@ -122,6 +133,18 @@ class GravityForms {
 		// Enqueue custom scripts here
 		wp_enqueue_script( 'nami-location-collection' );
 		wp_enqueue_style( 'radar-frontend' );
+
+		// Gravity Forms calls enqueue_form_scripts() (which fires
+		// gform_enqueue_scripts) more than once per request — once while
+		// parsing post content on wp_enqueue_scripts, and again in get_form()
+		// at render time. wp_localize_script() concatenates instead of
+		// replacing, so without this guard the config object is printed twice
+		// in the same inline <script> block. The enqueue calls above are
+		// idempotent, so they stay outside the guard.
+		if ( $this->localized ) {
+			return;
+		}
+		$this->localized = true;
 
 		// This data is visible to every visitor, so only ever expose a
 		// publishable key — a secret key must not leave the server.

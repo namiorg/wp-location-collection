@@ -53,6 +53,8 @@ You can identify each field in one of three ways. The plugin checks them **in th
 
 > 🌐 **Translated forms (e.g. Spanish):** the visible labels are translated, so the plugin can't recognize them by label. On a translated form, set the **Admin Field Label** (option 1) or a **CSS class** (option 2) on the ZIP, city, and state fields — those identifiers are not translated, so the fields are recognized in every language.
 
+> 📍 **Using a Gravity Forms "Address" field?** No tagging is needed. The plugin recognizes the street, city, state, ZIP, and country parts automatically by their fixed positions in the Address field, so it works in any language without admin labels or CSS classes. (The three options above are only for forms built from separate single-line fields.)
+
 Recognized keywords (not case-sensitive): **Zip** or **Postal** → ZIP / postal code · **City** → city · **State** or **Province** → state · **Street** → street address · **Country** → country.
 
 ### 5. Test it

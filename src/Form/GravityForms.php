@@ -120,31 +120,41 @@ class GravityForms {
 			return;
 		}
 
+		// Our assets are registered on wp_enqueue_scripts, but Gravity Forms
+		// fires gform_enqueue_scripts more than once per request and can fire
+		// it before that registration runs — e.g. block rendering in a block
+		// theme fires it before wp_enqueue_scripts. wp_enqueue_script() and
+		// wp_localize_script() both silently no-op on an unregistered handle,
+		// so bail until the handle exists; Gravity Forms fires this again later
+		// (block render, then the wp_enqueue_scripts parse, then get_form()),
+		// at which point the handle is registered.
+		if ( ! wp_script_is( 'nami-location-collection', 'registered' ) ) {
+			return;
+		}
+
+		// Idempotent — safe to repeat on every (registered) fire.
+		wp_enqueue_script( 'nami-location-collection' );
+		wp_enqueue_style( 'radar-frontend' );
+
+		// wp_localize_script() concatenates rather than replaces, and Gravity
+		// Forms fires this hook multiple times per request, so emit the config
+		// object exactly once. Guarding here (after the registered check) means
+		// the flag is only set on a fire that actually attaches the data — a
+		// guard before registration would swallow the wasted early fire and
+		// suppress the later working one, leaving no config at all.
+		if ( $this->localized ) {
+			return;
+		}
+		$this->localized = true;
+
 		// CSS Classes to look for in the form array. These are needed to pass
 		// to the frontend to initialize Radar.
 		// Check if field has the hidden type.
 		// If so, check label index for Zip, Postal, City, State, Province, or Country.
 		// Yes, this is hacky but Gravity Forms does not provide a better way to identify fields.
 		// the field ID can be constructed as 'input_' . $form_id . '_' . $field_id
-
 		$fields       = $form['fields'] ?? [];
 		$radar_fields = $this->find_radar_field( $fields, (int) $form['id'] );
-
-		// Enqueue custom scripts here
-		wp_enqueue_script( 'nami-location-collection' );
-		wp_enqueue_style( 'radar-frontend' );
-
-		// Gravity Forms calls enqueue_form_scripts() (which fires
-		// gform_enqueue_scripts) more than once per request — once while
-		// parsing post content on wp_enqueue_scripts, and again in get_form()
-		// at render time. wp_localize_script() concatenates instead of
-		// replacing, so without this guard the config object is printed twice
-		// in the same inline <script> block. The enqueue calls above are
-		// idempotent, so they stay outside the guard.
-		if ( $this->localized ) {
-			return;
-		}
-		$this->localized = true;
 
 		// This data is visible to every visitor, so only ever expose a
 		// publishable key — a secret key must not leave the server.

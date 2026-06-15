@@ -59,6 +59,24 @@ class GravityForms {
 		'Longitude'   => 'longitude',
 	];
 
+	/**
+	 * Radar keys for Gravity Forms Address sub-inputs.
+	 *
+	 * Address sub-input IDs are fixed by Gravity Forms regardless of label or
+	 * language — <field>.1 street, .2 line 2, .3 city, .4 state, .5 zip,
+	 * .6 country — so mapping by sub-input ID is translation-proof. (.2 has no
+	 * Radar equivalent and is intentionally omitted.)
+	 *
+	 * @var array|string[]
+	 */
+	protected array $address_subfield_map = [
+		'1' => 'addressLabel',
+		'3' => 'city',
+		'4' => 'state',
+		'5' => 'postalCode',
+		'6' => 'country',
+	];
+
 
 	/**
 	 * Get Singleton Instance
@@ -151,18 +169,26 @@ class GravityForms {
 		$form_id_str  = $exclude_form_id ? '' : '_' . $form_id;
 
 		foreach ( $fields as $field ) {
-			// we need to handle GF_Field_Address fields differently
+			// Gravity Forms Address fields expose their parts as sub-inputs with
+			// fixed IDs (.1 street, .3 city, .4 state, .5 zip, .6 country), so map
+			// them by sub-input ID — independent of the label's language. Forms
+			// built from standalone text fields fall through to the label /
+			// admin-label / CSS-class resolution below.
 			if ( 'address' === $field->type && $field instanceof GF_Field_Address ) {
 				foreach ( $field->inputs as $subfield ) {
-					$field_key = $this->get_field( $subfield['label'] ?? '' );
+					$parts     = explode( '.', (string) ( $subfield['id'] ?? '' ) );
+					$field_key = $this->address_subfield_map[ end( $parts ) ] ?? '';
 					if ( empty( $field_key ) ) {
 						continue;
 					}
 
-					$input                      = 'input' . $form_id_str . str_replace( '.', '_', $subfield['id'] );
+					// GF renders sub-inputs as input_<form>_<field>_<sub> (DOM id)
+					// or input_<field>_<sub> (POST name, when form id excluded);
+					// either way a separator precedes the field/sub id.
+					$input                      = 'input' . $form_id_str . '_' . str_replace( '.', '_', $subfield['id'] );
 					$radar_fields[ $field_key ] = $input;
 
-					// Anchor the autocomplete on the zip sub-input (see below).
+					// Anchor the autocomplete on the visible zip sub-input.
 					if ( 'postalCode' === $field_key && empty( $subfield['isHidden'] ) ) {
 						$radar_fields['autocomplete'] = $input;
 					}

@@ -19,7 +19,15 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 require_once  plugin_dir_path( __FILE__ ) . 'vendor/autoload.php';
 
-if ( class_exists( 'Nami\LocationData\Bootstrap' ) && ! wp_doing_ajax() ) {
+// NB: do not gate this on ! wp_doing_ajax(). The plugin's work happens during
+// AJAX requests, not just normal page loads: WordPress runs the "Update now"
+// button through admin-ajax (wp_ajax_update_plugin -> wp_update_plugins), so the
+// self-hosted update filter must be attached then or the update reports
+// "already at the latest version"; and Gravity Forms validates and submits
+// AJAX-enabled forms over admin-ajax, so the zip validation and Radar field
+// population must be hooked then too. Every init() below only registers hooks
+// for the contexts they belong to, so loading during AJAX is safe.
+if ( class_exists( 'Nami\LocationData\Bootstrap' ) ) {
 	Nami_Location_Collection::set_plugin_path( plugin_dir_path( __FILE__ ) );
 	Nami_Location_Collection::set_plugin_basename( plugin_basename( __FILE__ ) );
 
